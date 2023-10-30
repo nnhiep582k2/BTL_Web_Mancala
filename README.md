@@ -1,4 +1,4 @@
-### Author Github: nghinhan-dev
+### Author Github: Nhóm 2 - AI
 
 ### Modified by Group 2 - CNTT2 K61 UTC
 
