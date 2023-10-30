@@ -91,6 +91,7 @@ export default function Board() {
 
     // arrow click handle
     let arrowClick = () => {
+        let newCurrentPlayerPoint = 0;
         let newCardsState = cardsState;
         let movingMap = gameState.map;
         let point = newCardsState[gameState.clickedID - 1].point;
@@ -193,6 +194,8 @@ export default function Board() {
                               ...prevState,
                               player1Point: prevState.player1Point + result,
                           }));
+
+                    newCurrentPlayerPoint = result;
                 }
             }, 500 * index);
         }
@@ -203,6 +206,61 @@ export default function Board() {
             }));
             changeTurn(gameState.isPlayerTwoNext);
         }, 500 * point);
+
+        // Cơ chế rải nếu hết quân
+        setTimeout(() => {
+            if (!gameState.isPlayerTwoNext) {
+                // Player 1
+                let isAllEmpty = newCardsState
+                    .filter((item) => {
+                        if ([2, 3, 4, 5, 6].includes(item.id)) return item;
+                    })
+                    .every((card) => card.point === 0);
+                if (isAllEmpty) {
+                    setGamteState((prevState) => ({
+                        ...prevState,
+                        player1Point: prevState.player1Point - 5,
+                    }));
+                }
+                setCardsData(() => [
+                    ...cardsState.map((item) => {
+                        if ([2, 3, 4, 5, 6].includes(item.id))
+                            return {
+                                ...item,
+                                displayLeftArrow: false,
+                                displayRightArrow: false,
+                                point: item.point + 1,
+                            };
+                        return item;
+                    }),
+                ]);
+            } else {
+                // Player 2
+                let isAllEmpty = newCardsState
+                    .filter((item) => {
+                        if ([7, 8, 9, 10, 11].includes(item.id)) return item;
+                    })
+                    .every((card) => card.point === 0);
+                if (isAllEmpty) {
+                    setGamteState((prevState) => ({
+                        ...prevState,
+                        player2Point: prevState.player2Point - 5,
+                    }));
+                }
+                setCardsData(() => [
+                    ...cardsState.map((item) => {
+                        if ([7, 8, 9, 10, 11].includes(item.id))
+                            return {
+                                ...item,
+                                displayLeftArrow: false,
+                                displayRightArrow: false,
+                                point: item.point + 1,
+                            };
+                        return item;
+                    }),
+                ]);
+            }
+        }, 600 * point);
     };
 
     const handleArrowClick = () => {
