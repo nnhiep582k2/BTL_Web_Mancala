@@ -253,8 +253,8 @@ export default function Board() {
                         if ([7, 8, 9, 10, 11].includes(item.id))
                             return {
                                 ...item,
-                                displayLeftArrow: false,
-                                displayRightArrow: false,
+                                displayLeftArrow: true,
+                                displayRightArrow: true,
                                 point: item.point + 1,
                             };
                         return item;
