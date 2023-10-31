@@ -107,6 +107,24 @@
     z-index: 1;
 }
 
+.replay{
+    width: 150px;
+    height: 70px;
+    font-size: 30px;
+    border-radius: 20px;
+    background-color: var(--shadow-color);
+    text-shadow: 0 0 10px rgb(219, 219, 102);
+    font-family: 'Neonderthaw', cursive;
+    color: yellow;
+    z-index: 3;
+    position: fixed;
+    cursor: pointer;
+}
+
+.replay:hover{
+    transform: scale(0.9);
+    transition: all linear 0.3s;
+}
 
 
 #board {
@@ -116,6 +134,11 @@
     position: relative;
     z-index: 3;
 }
+
+#board.disable{
+    z-index: 0;
+}
+
 #board:hover > .card::after {
     opacity: 1;
 }
