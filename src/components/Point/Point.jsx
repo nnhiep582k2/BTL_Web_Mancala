@@ -4,10 +4,10 @@ export default function Point({
     isPlayerTwoNext,
     p1Point,
     p2Point,
-    cardsState,
+    isEndGame,
 }) {
     let congratSound = () => {
-        if (cardsState[0].point === 0 && cardsState[11].point === 0) {
+        if (isEndGame) {
             setTimeout(() => {
                 document.getElementById("winnerAu").play();
             }, 300);
@@ -24,11 +24,7 @@ export default function Point({
     };
 
     return (
-        <div
-            className={`gameState ${
-                cardsState[0].point === 0 && cardsState[11].point === 0 ? "show_winner" : null
-            } `}
-        >
+        <div className={`gameState ${isEndGame ? "show_winner" : null} `}>
             <div className="playerState">
                 <h1 className={isPlayerTwoNext ? null : "currentPlayer"}>P1</h1>
                 <p className="point">{p1Point}</p>
