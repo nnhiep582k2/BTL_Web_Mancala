@@ -196,6 +196,63 @@ export default function Board() {
         return {};
     };
 
+    const renderMoonAfterBorrow = (point, newCardsState) => {
+        let movingMap = gameState.map;
+        let cardList = document.querySelectorAll('.card');
+
+        for (let index = 1; index < 6; index++) {
+            setTimeout(() => {
+                document.getElementById('arrowClick').play();
+                setCardsData(() => [...newCardsState]);
+
+                let indexOfMap = validateIndex(index);
+                // get the locate of the card
+                let indexLocate = movingMap[indexOfMap] - 1;
+
+                // indicate which card is changing point
+                cardList[indexLocate].classList.add('movingShadow');
+                setTimeout(() => {
+                    cardList[indexLocate].classList.remove('movingShadow');
+                }, 500);
+
+                // update card
+                if (indexLocate == 0 || indexLocate == 11) {
+                    newCardsState[indexLocate] = {
+                        ...newCardsState[indexLocate],
+                        point: newCardsState[indexLocate].point + 1,
+                    };
+                } else {
+                    newCardsState[indexLocate] = {
+                        ...newCardsState[indexLocate],
+                        point: newCardsState[indexLocate].point + 1,
+                        pointArr: [
+                            ...newCardsState[indexLocate].pointArr,
+                            newCardsState[indexLocate].point + 1,
+                        ],
+                    };
+                }
+
+                if (index == point) {
+                    let result = turnResult(
+                        newCardsState,
+                        movingMap,
+                        movingMap[validateIndex(1 + point + 1)] - 1
+                    );
+
+                    gameState.isPlayerTwoNext
+                        ? setGamteState((prevState) => ({
+                              ...prevState,
+                              player2Point: prevState.player2Point + result,
+                          }))
+                        : setGamteState((prevState) => ({
+                              ...prevState,
+                              player1Point: prevState.player1Point + result,
+                          }));
+                }
+            }, 500 * index);
+        }
+    };
+
     // Cơ chế rải nếu hết quân - Chưa render lại giao diện
     const borrowPieces = (point, newCardsState) => {
         setTimeout(() => {
@@ -223,7 +280,7 @@ export default function Board() {
                         return item;
                     });
                     setCardsData(() => [...tempState]);
-                    renderMoonEachCard(point, newCardsState);
+                    renderMoonAfterBorrow(point, newCardsState);
                 }
             } else {
                 // Player 2
@@ -249,7 +306,7 @@ export default function Board() {
                         return item;
                     });
                     setCardsData(() => [...tempState]);
-                    renderMoonEachCard(point, newCardsState);
+                    renderMoonAfterBorrow(point, newCardsState);
                 }
             }
         }, 600 * point);
