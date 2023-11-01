@@ -9,8 +9,8 @@
     --group-name-height: 50px;
 }
 
-.nav{
-    height: 60px;
+.nav {
+    height: 54px;
     width: 100%;
     background-color: var(--shadow-color);
     display: flex;
@@ -19,31 +19,30 @@
     padding: 10px 20px;
 }
 
-.nav__link{
+.nav__link {
     text-decoration: none;
     font-size: 30px;
     font-weight: 600;
     color: #fff;
 }
 
-
-.nav__img{
+.nav__img {
     width: 50px;
     height: 100%;
     border-radius: 9999%;
 }
 
-.wrap__option{
+.wrap__option {
     display: flex;
     align-items: center;
     justify-content: center;
     column-gap: 100px;
 }
 
-.btn__option{
+.btn__option {
     width: 250px;
     height: 250px;
-    background-color:  var(--shadow-color);;
+    background-color: var(--shadow-color);
     border-radius: 20px;
     display: flex;
     align-items: center;
@@ -58,7 +57,7 @@
     color: yellow;
 }
 
-.btn__option:hover{
+.btn__option:hover {
     transform: scale(0.9);
     transition: all linear 0.3s;
 }
@@ -67,7 +66,7 @@
     display: flex;
     flex-direction: column;
     width: 100vw;
-    height: calc(100vh - 60px);
+    height: calc(100vh - 54px);
     overflow: hidden;
     position: relative;
 }
@@ -82,12 +81,13 @@
     text-transform: uppercase;
 }
 
-.main,.game {
+.main,
+.game {
     background: url(../images/nightmoon.jpg) no-repeat;
     background-position: 71%;
     background-size: cover;
     width: 100%;
-    height: calc(100vh - 60px);
+    height: calc(100vh - 54px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -95,8 +95,10 @@
     padding: 0px;
     overflow: hidden;
     position: relative;
+    padding-top: 30px;
 }
-.main::after, .game::after {
+.main::after,
+.game::after {
     position: absolute;
     content: '';
     top: 0;
@@ -107,7 +109,7 @@
     z-index: 1;
 }
 
-.replay{
+.replay {
     width: 150px;
     height: 70px;
     font-size: 30px;
@@ -121,11 +123,10 @@
     cursor: pointer;
 }
 
-.replay:hover{
+.replay:hover {
     transform: scale(0.9);
     transition: all linear 0.3s;
 }
-
 
 #board {
     display: grid;
@@ -135,7 +136,7 @@
     z-index: 3;
 }
 
-#board.disable{
+#board.disable {
     z-index: 0;
 }
 
@@ -572,7 +573,7 @@
     top: -210px;
 }
 
-.winner_detail{
+.winner_detail {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -583,7 +584,6 @@
     column-gap: 63px;
     transform: translateX(-50%);
 }
-
 
 @keyframes currentPlayerText {
     0% {
@@ -601,4 +601,12 @@
 .container {
     width: calc(var(--card-height) * 7 + var(--gap) * 6);
     margin: 0 auto;
+}
+
+.arrow-right,
+.arrow-left {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    filter: brightness(0) invert(1);
 }

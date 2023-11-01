@@ -103,28 +103,10 @@ export default function Board() {
         setCardsData(() => [...cardsState]);
     };
 
-    // arrow click handle
-    let arrowClick = () => {
-        let newCurrentPlayerPoint = 0;
-        let newCardsState = cardsState;
+    const renderMoonEachCard = (point, newCardsState) => {
         let movingMap = gameState.map;
-        let point = newCardsState[gameState.clickedID - 1].point;
         let cardList = document.querySelectorAll('.card');
         let startIndex = movingMap.findIndex((a) => a == gameState.clickedID);
-
-        newCardsState[gameState.clickedID - 1] = {
-            ...newCardsState[gameState.clickedID - 1],
-            point: 0,
-            pointArr: [],
-        };
-
-        newCardsState = newCardsState.map((card) => ({
-            ...card,
-            isChoosen: false,
-            displayLeftArrow: false,
-            displayRightArrow: false,
-            isGreen: false,
-        }));
 
         for (let index = 1; index <= point; index++) {
             setTimeout(() => {
@@ -208,21 +190,14 @@ export default function Board() {
                               ...prevState,
                               player1Point: prevState.player1Point + result,
                           }));
-
-                    newCurrentPlayerPoint = result;
                 }
             }, 500 * index);
         }
+        return {};
+    };
 
-        setTimeout(() => {
-            setGamteState((prevState) => ({
-                ...prevState,
-                isPlayerTwoNext: !prevState.isPlayerTwoNext,
-            }));
-            changeTurn(gameState.isPlayerTwoNext);
-        }, 500 * point);
-
-        // Cơ chế rải nếu hết quân - Chưa render lại giao diện
+    // Cơ chế rải nếu hết quân - Chưa render lại giao diện
+    const borrowPieces = (point, newCardsState) => {
         setTimeout(() => {
             if (!gameState.isPlayerTwoNext) {
                 // Player 1
@@ -248,6 +223,7 @@ export default function Board() {
                         return item;
                     });
                     setCardsData(() => [...tempState]);
+                    renderMoonEachCard(point, newCardsState);
                 }
             } else {
                 // Player 2
@@ -273,9 +249,42 @@ export default function Board() {
                         return item;
                     });
                     setCardsData(() => [...tempState]);
+                    renderMoonEachCard(point, newCardsState);
                 }
             }
         }, 600 * point);
+    };
+
+    // arrow click handle
+    let arrowClick = () => {
+        let newCardsState = cardsState;
+        let point = newCardsState[gameState.clickedID - 1].point;
+
+        newCardsState[gameState.clickedID - 1] = {
+            ...newCardsState[gameState.clickedID - 1],
+            point: 0,
+            pointArr: [],
+        };
+
+        newCardsState = newCardsState.map((card) => ({
+            ...card,
+            isChoosen: false,
+            displayLeftArrow: false,
+            displayRightArrow: false,
+            isGreen: false,
+        }));
+
+        renderMoonEachCard(point, newCardsState);
+
+        setTimeout(() => {
+            setGamteState((prevState) => ({
+                ...prevState,
+                isPlayerTwoNext: !prevState.isPlayerTwoNext,
+            }));
+            changeTurn(gameState.isPlayerTwoNext);
+        }, 500 * point);
+
+        borrowPieces(point, newCardsState);
     };
 
     const handleArrowClick = () => {

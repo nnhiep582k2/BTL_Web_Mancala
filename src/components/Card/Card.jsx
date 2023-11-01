@@ -10,9 +10,21 @@ export default function Square(props) {
 
     let renderArrow = (leftArrow) => {
         if (leftArrow) {
-            return <i className="arrow fa fa-angle-double-left"></i>;
+            return (
+                <img
+                    className="arrow-left"
+                    src="/src/assets/images/arrow-left.png"
+                    alt="Arrow Left"
+                />
+            );
         } else {
-            return <i className="arrow fa fa-angle-double-right"></i>;
+            return (
+                <img
+                    className="arrow-right"
+                    src="/src/assets/images/arrow-right.png"
+                    alt="Arrow Right"
+                />
+            );
         }
     };
 
