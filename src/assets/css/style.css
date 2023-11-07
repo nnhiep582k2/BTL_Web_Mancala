@@ -239,7 +239,7 @@
     font-family: 'Neonderthaw', cursive;
     color: #c7edf8;
     position: absolute;
-    top: 45%;
+    top: 50%;
     left: 50%;
     transform: translateX(-50%) translateY(-50%);
 }
@@ -368,6 +368,12 @@
     left: 230%;
     top: 125%;
 }
+
+.moonMandarin{
+    width: 60px;
+    height: 60px;
+}
+
 @keyframes textGlow {
     from {
         text-shadow: 0 0 5px #fff, 0 0 15px #fff, 0 0 25px #e60073;
