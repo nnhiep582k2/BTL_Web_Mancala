@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import Board from '../components/Board/Board';
 
 const PeoplePage = () => {
