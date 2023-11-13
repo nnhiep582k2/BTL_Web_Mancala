@@ -549,6 +549,10 @@
     color: #00ff37;
     animation: currentPlayerText 1.4s ease-in infinite;
 }
+
+.currentPlayer .currentPlayer{
+    margin-top: 10px;
+}
 .playerState .point {
     position: relative;
     top: -50px;

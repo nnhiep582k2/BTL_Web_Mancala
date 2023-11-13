@@ -3,7 +3,7 @@ import React from "react";
 export default function Ufo(props) {
     const renderMandarin = () => {
         // check hiển thị quan hay không
-        if (props.point >= 10) {
+        if (props.point >= 10 && props.isUFO) {
             return (
                 <div className="moon moonMandarin">
                     <div className="craters"></div>
@@ -14,21 +14,21 @@ export default function Ufo(props) {
 
     const renderMoon = [];
     // render các dân trong quan
-    if (props.point >= 10) {
+    if (props.point >= 10 && props.isUFO) {
         for (let index = 0; index < props.point - 10; index++) {
             renderMoon.push(
                 <div className="moon">
                     <div className="craters"></div>
                 </div>
-            )
+            );
         }
-    }else{
+    } else {
         for (let index = 0; index < props.point; index++) {
             renderMoon.push(
                 <div className="moon">
                     <div className="craters"></div>
                 </div>
-            )
+            );
         }
     }
 

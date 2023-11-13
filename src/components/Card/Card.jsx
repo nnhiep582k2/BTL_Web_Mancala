@@ -57,7 +57,7 @@ export default function Square(props) {
                     <div className="card-content">
                         {!props.data.displayLeftArrow &&
                         !props.data.displayRightArrow ? (
-                            <Ufo point={props.data.point} />
+                            <Ufo point={props.data.point} isUFO={props.data.isUFO}/>
                         ) : (
                             renderArrow(props.data.displayLeftArrow)
                         )}
