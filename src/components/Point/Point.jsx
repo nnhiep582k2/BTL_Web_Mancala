@@ -28,17 +28,25 @@ export default function Point({
     return (
         <div className={`gameState ${isEndGame ? 'show_winner' : null} `}>
             <div className="playerState">
-                <h1 className={isPlayerTwoNext ? null : 'currentPlayer'}>
+                <div
+                    className={`player ${
+                        isPlayerTwoNext ? null : 'currentPlayer'
+                    }`}
+                >
                     P1
                     {!isPlayer && <p className="currentPlayer">{timeLeft}</p>}
-                </h1>
+                </div>
                 <p className="point">{p1Point}</p>
                 <h3>vs</h3>
                 <p className="point">{p2Point}</p>
-                <h1 className={isPlayerTwoNext ? 'currentPlayer' : null}>
+                <div
+                    className={`player ${
+                        isPlayerTwoNext ? 'currentPlayer' : null
+                    }`}
+                >
                     P2
                     {isPlayer && <p className="currentPlayer">{timeLeft}</p>}
-                </h1>
+                </div>
             </div>
 
             <div className="winner_notification">{congratSound()}</div>

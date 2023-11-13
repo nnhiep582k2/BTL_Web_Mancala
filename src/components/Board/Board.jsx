@@ -172,46 +172,11 @@ export default function Board() {
                 }
 
                 if (index == point) {
-                    console.log(123);
-                    // rải quân tiếp nếu có
-                    // if (
-                    //     newCardsState[
-                    //         gameState.movingLeft === "forward"
-                    //             ? gameState.lastCardIndex + 1
-                    //             : gameState.lastCardIndex - 1
-                    //     ].point > 0
-                    // ) {
-                    // setGamteState((prevState) => ({
-                    //     ...prevState,
-                    //     clickedID:
-                    //         gameState.movingLeft === "forward"
-                    //             ? gameState.lastCardIndex + 1
-                    //             : gameState.lastCardIndex - 1,
-                    // }));
-                    // handleArrowClick();
-                    // } else {
-                    //     let result = turnResult(
-                    //         newCardsState,
-                    //         movingMap,
-                    //         movingMap[validateIndex(startIndex + point + 1)] - 1
-                    //     );
-                    //     gameState.isPlayerTwoNext
-                    //         ? setGamteState((prevState) => ({
-                    //               ...prevState,
-                    //               player2Point: prevState.player2Point + result,
-                    //           }))
-                    //         : setGamteState((prevState) => ({
-                    //               ...prevState,
-                    //               player1Point: prevState.player1Point + result,
-                    //           }));
-                    // }
-
                     let result = turnResult(
                         newCardsState,
                         movingMap,
                         movingMap[validateIndex(startIndex + point + 1)] - 1
                     );
-                    debugger;
 
                     gameState.isPlayerTwoNext
                         ? setGamteState((prevState) => ({
@@ -270,7 +235,6 @@ export default function Board() {
                         movingMap,
                         movingMap[validateIndex(1 + point + 1)] - 1
                     );
-                    debugger;
 
                     gameState.isPlayerTwoNext
                         ? setGamteState((prevState) => ({
@@ -365,6 +329,42 @@ export default function Board() {
         }));
 
         renderMoonEachCard(point, newCardsState);
+
+        // Xử lý rải quân tiếp
+        // let theNextId = -1;
+        // if (gameState.movingLeft == 'forward') {
+        //     for (let index = 0; index < gameState.map.length; index++) {
+        //         let item = gameState.map[index];
+        //         if (item === gameState.lastCardIndex + 1) {
+        //             theNextId = gameState.map[index + 1];
+        //             break;
+        //         }
+        //     }
+        //     if (theNextId == undefined) theNextId = 1;
+        // } else {
+        //     for (let index = gameState.map.length - 1; index >= 0; index--) {
+        //         let item = gameState.map[index];
+        //         if (item === gameState.lastCardIndex + 1) {
+        //             theNextId = gameState.map[index + 1];
+        //             break;
+        //         }
+        //     }
+        //     if (theNextId == undefined) theNextId = 7;
+        // }
+
+        // let thePoint = newCardsState.filter((item) => item.id === theNextId)[0]
+        //     .point;
+
+        // setTimeout(() => {
+        //     setGamteState((prevState) => ({
+        //         ...prevState,
+        //         isPlayerTwoNext:
+        //             thePoint > 0
+        //                 ? prevState.isPlayerTwoNext
+        //                 : !prevState.isPlayerTwoNext,
+        //     }));
+        //     changeTurn(gameState.isPlayerTwoNext);
+        // }, 500 * point);
 
         setTimeout(() => {
             setGamteState((prevState) => ({
