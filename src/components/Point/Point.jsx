@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 export default function Point({
     isPlayerTwoNext,
@@ -11,7 +11,7 @@ export default function Point({
     let congratSound = () => {
         if (isEndGame) {
             setTimeout(() => {
-                document.getElementById("winnerAu").play();
+                document.getElementById('winnerAu').play();
             }, 300);
             return (
                 <div>
@@ -26,18 +26,18 @@ export default function Point({
     };
 
     return (
-        <div className={`gameState ${isEndGame ? "show_winner" : null} `}>
+        <div className={`gameState ${isEndGame ? 'show_winner' : null} `}>
             <div className="playerState">
-                <h1 className={isPlayerTwoNext ? null : "currentPlayer"}>
+                <h1 className={isPlayerTwoNext ? null : 'currentPlayer'}>
                     P1
-                    {!isPlayer && <h1 className="currentPlayer">{timeLeft}</h1>}
+                    {!isPlayer && <p className="currentPlayer">{timeLeft}</p>}
                 </h1>
                 <p className="point">{p1Point}</p>
                 <h3>vs</h3>
                 <p className="point">{p2Point}</p>
-                <h1 className={isPlayerTwoNext ? "currentPlayer" : null}>
+                <h1 className={isPlayerTwoNext ? 'currentPlayer' : null}>
                     P2
-                    {isPlayer && <h1 className="currentPlayer">{timeLeft}</h1>}
+                    {isPlayer && <p className="currentPlayer">{timeLeft}</p>}
                 </h1>
             </div>
 

@@ -74,7 +74,7 @@
     width: 100%;
     height: var(--group-name-height);
     position: absolute;
-    bottom: 20px;
+    bottom: 0;
     color: white;
     font-size: 20px;
     text-align: center;
@@ -369,7 +369,7 @@
     top: 125%;
 }
 
-.moonMandarin{
+.moonMandarin {
     width: 60px;
     height: 60px;
 }
@@ -550,7 +550,7 @@
     animation: currentPlayerText 1.4s ease-in infinite;
 }
 
-.currentPlayer .currentPlayer{
+.currentPlayer .currentPlayer {
     margin-top: 10px;
 }
 .playerState .point {
