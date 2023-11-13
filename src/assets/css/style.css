@@ -620,3 +620,8 @@
     object-fit: cover;
     filter: brightness(0) invert(1);
 }
+
+.player {
+    font-size: 28px;
+    font-weight: 600;
+}

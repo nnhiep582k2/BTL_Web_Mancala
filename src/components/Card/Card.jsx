@@ -71,9 +71,7 @@ export default function Square(props) {
                 <div
                     className={`card ${
                         props.data.isChoosen ? 'choosing-state' : ''
-                    } ${props.isPlayerTwoNext ? 'not-allowed' : ''}  ${
-                        props.data.isGreen ? 'locateShadow' : ''
-                    } `}
+                    } ${props.data.isGreen ? 'locateShadow' : ''} `}
                     onClick={
                         props.data.displayLeftArrow ||
                         props.data.displayRightArrow
@@ -111,9 +109,7 @@ export default function Square(props) {
                 <div
                     className={`card ${
                         props.data.isChoosen ? 'choosing-state' : ''
-                    } ${props.isPlayerTwoNext ? '' : 'not-allowed'} ${
-                        props.data.isGreen ? 'locateShadow' : ''
-                    }`}
+                    } ${props.data.isGreen ? 'locateShadow' : ''}`}
                     onClick={
                         props.data.displayLeftArrow ||
                         props.data.displayRightArrow
