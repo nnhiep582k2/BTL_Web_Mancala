@@ -53,17 +53,9 @@ export default function Board() {
 
         // Khi thời gian còn lại hết, chuyển qua người chơi tiếp theo
         if (timeLeftTwoNext.timeLeft === 0) {
-            let newCardsState = cardsState;
             setGamteState((prevState) => ({
                 ...prevState,
                 isPlayerTwoNext: !prevState.isPlayerTwoNext,
-            }));
-            newCardsState = newCardsState.map((card) => ({
-                ...card,
-                isChoosen: false,
-                displayLeftArrow: false,
-                displayRightArrow: false,
-                isGreen: false,
             }));
             setTimeLeftTwoNext((prevTime) => ({
                 timeLeft: 30,
@@ -99,14 +91,6 @@ export default function Board() {
             }));
             setCountdown(true);
         }
-        // let newCardsState = cardsState;
-        // newCardsState = newCardsState.map((card) => ({
-        //     ...card,
-        //     isChoosen: false,
-        //     displayLeftArrow: false,
-        //     displayRightArrow: false,
-        //     isGreen: false,
-        // }));
     };
 
     // manage Game State
@@ -156,161 +140,6 @@ export default function Board() {
         setCardsData(() => [...cardsState]);
     };
 
-    const resetSquare = (theId, newCardsState) => {
-        let cardList;
-        setTimeout(() => {
-            cardList = newCardsState.map((el) => {
-                if (el.id === theId) {
-                    el.point = 0;
-                    el.pointArr = [];
-                }
-                return el;
-            });
-            setCardsData(cardList);
-        }, theId);
-    };
-
-    const renderMoon = (point, theId, thePoint, newCardsState) => {
-        let movingMap = gameState.map;
-        let cardList = document.querySelectorAll(".card");
-        let startPoint = -1;
-        for (let i = 0; i < movingMap.length; i++) {
-            if (movingMap[i] === theId) {
-                startPoint = i + 1;
-                break;
-            }
-        }
-
-        for (let index = 1; index <= thePoint; index++) {
-            setTimeout(() => {
-                document.getElementById("arrowClick").play();
-                setCardsData(() => [...newCardsState]);
-
-                let indexOfMap = validateIndex(startPoint);
-                // get the locate of the card
-                let indexLocate = movingMap[indexOfMap] - 1;
-
-                // indicate which card is changing point
-                cardList[indexLocate].classList.add("movingShadow");
-                setTimeout(() => {
-                    cardList[indexLocate].classList.remove("movingShadow");
-                }, 500);
-
-                // update card
-                if (indexLocate == 0 || indexLocate == 11) {
-                    newCardsState[indexLocate] = {
-                        ...newCardsState[indexLocate],
-                        point: newCardsState[indexLocate].point + 1,
-                    };
-                } else {
-                    newCardsState[indexLocate] = {
-                        ...newCardsState[indexLocate],
-                        point: newCardsState[indexLocate].point + 1,
-                        pointArr: [
-                            ...newCardsState[indexLocate].pointArr,
-                            newCardsState[indexLocate].point + 1,
-                        ],
-                    };
-                }
-
-                if (index == point) {
-                    let result = turnResult(
-                        newCardsState,
-                        movingMap,
-                        movingMap[validateIndex(indexLocate + 1)] - 1
-                    );
-                    gameState.isPlayerTwoNext
-                        ? setGamteState((prevState) => ({
-                              ...prevState,
-                              player2Point: prevState.player2Point + result,
-                          }))
-                        : setGamteState((prevState) => ({
-                              ...prevState,
-                              player1Point: prevState.player1Point + result,
-                          }));
-                    setTimeLeftTwoNext((prevTime) => ({
-                        timeLeft: 30,
-                        isPlayerTwoNext: !prevTime.isPlayerTwoNext,
-                    }));
-                    setGamteState((prevState) => ({
-                        ...prevState,
-                        isPlayerTwoNext: !prevState.isPlayerTwoNext,
-                    }));
-                    setCountdown(true);
-                }
-                startPoint++;
-            }, 500 * index);
-        }
-    };
-
-    // Rải quân tiếp
-    const handleContinueSpread = (point, newCardsState) => {
-        let theNextId = -1;
-        let theAfterNextId = -1;
-
-        if (gameState.movingLeft == "forward") {
-            for (let index = 0; index < gameState.map.length; index++) {
-                let item = gameState.map[index];
-                if (item === gameState.lastCardIndex + 1) {
-                    theNextId = gameState.map[index + 1];
-                    theAfterNextId = gameState.map[index + 2];
-                    break;
-                }
-            }
-            if (theNextId == undefined) {
-                theNextId = 1;
-                theAfterNextId = 2;
-            }
-            if(theAfterNextId == undefined && theNextId === 7){
-                theAfterNextId = 1;
-            }
-        } else {
-            for (let index = gameState.map.length - 1; index >= 0; index--) {
-                let item = gameState.map[index];
-                if (item === gameState.lastCardIndex + 1) {
-                    theNextId = gameState.map[index + 1];
-                    theAfterNextId = gameState.map[index + 2];
-                    break;
-                }
-            }
-            if (theNextId == undefined) {
-                theNextId = 7;
-                theAfterNextId = 8;
-            }
-            if(theAfterNextId == undefined && theNextId === 1){
-                theAfterNextId = 7;
-            }
-        }
-
-        let theNextPoint = theNextId && newCardsState.filter(
-            (item) => item.id === theNextId
-        )[0].point;
-        let theAfterNextPoint = theAfterNextId && newCardsState.filter(
-            (item) => item.id === theAfterNextId
-        )[0].point;
-
-        if (theNextPoint > 0) {
-            // Rải tiếp và đệ quy
-            resetSquare(theNextId, newCardsState);
-            renderMoon(point, theNextId, theNextPoint, newCardsState);
-            setTimeout(() => {
-                setGamteState((prevState) => ({
-                    ...prevState,
-                    clickedID:
-                        gameState.movingLeft === "forward"
-                            ? gameState.lastCardIndex + 1
-                            : gameState.lastCardIndex - 1,
-                }));
-                handleArrowClick();
-            }, 4000);
-        } else if (theNextPoint === 0 && theAfterNextPoint > 0) {
-            // Ăn và đệ quy
-            return;
-        } else if (theNextPoint === 0 && theAfterNextPoint === 0) {
-            return;
-        }
-    };
-
     const renderMoonEachCard = (point, newCardsState) => {
         let movingMap = gameState.map;
         let cardList = document.querySelectorAll(".card");
@@ -349,38 +178,128 @@ export default function Board() {
                 }
 
                 if (index == point) {
-                    if (
-                        cardsState[
-                            movingMap[validateIndex(startIndex + point + 1)] - 1
-                        ].point > 0
-                    ) {
-                        handleContinueSpread(point, newCardsState);
-                    } else {
-                        let result = turnResult(
-                            newCardsState,
-                            movingMap,
-                            movingMap[validateIndex(startIndex + point + 1)] - 1
-                        );
+                    // rải quân tiếp nếu có
+                    handleContinueSpread(
+                        point,
+                        newCardsState,
+                        movingMap,
+                        startIndex
+                    );
+                    // handleArrowClick();
 
-                        gameState.isPlayerTwoNext
-                            ? setGamteState((prevState) => ({
-                                  ...prevState,
-                                  player2Point: prevState.player2Point + result,
-                              }))
-                            : setGamteState((prevState) => ({
-                                  ...prevState,
-                                  player1Point: prevState.player1Point + result,
-                              }));
-                    }
+                    // let result = turnResult(
+                    //     newCardsState,
+                    //     movingMap,
+                    //     movingMap[validateIndex(startIndex + point + 1)] - 1
+                    // );
+
+                    // gameState.isPlayerTwoNext
+                    //     ? setGamteState((prevState) => ({
+                    //           ...prevState,
+                    //           player2Point: prevState.player2Point + result,
+                    //       }))
+                    //     : setGamteState((prevState) => ({
+                    //           ...prevState,
+                    //           player1Point: prevState.player1Point + result,
+                    //       }));
                 }
             }, 500 * index);
         }
         return {};
     };
 
+    // Rải quân tiếp
+    const handleContinueSpread = (
+        point,
+        newCardsState,
+        movingMap,
+        startIndex
+    ) => {
+        let theNextId = -1;
+        let theAfterNextId = -1;
+
+        if (gameState.movingLeft == "forward") {
+            for (let index = 0; index < gameState.map.length; index++) {
+                let item = gameState.map[index];
+                if (item === gameState.lastCardIndex + 1) {
+                    theNextId = gameState.map[index + 1];
+                    theAfterNextId = gameState.map[index + 2];
+                    break;
+                }
+            }
+            if (theNextId == undefined) {
+                theNextId = 1;
+                theAfterNextId = 2;
+            }
+            if (theAfterNextId == undefined && theNextId === 7) {
+                theAfterNextId = 1;
+            }
+        } else {
+            for (let index = gameState.map.length - 1; index >= 0; index--) {
+                let item = gameState.map[index];
+                if (item === gameState.lastCardIndex + 1) {
+                    theNextId = gameState.map[index + 1];
+                    theAfterNextId = gameState.map[index + 2];
+                    break;
+                }
+            }
+            if (theNextId == undefined) {
+                theNextId = 7;
+                theAfterNextId = 8;
+            }
+            if (theAfterNextId == undefined && theNextId === 1) {
+                theAfterNextId = 7;
+            }
+        }
+
+        let theNextPoint =
+            theNextId &&
+            newCardsState.filter((item) => item.id === theNextId)[0].point;
+        let theAfterNextPoint =
+            theAfterNextId &&
+            newCardsState.filter((item) => item.id === theAfterNextId)[0].point;
+
+        if (theNextPoint > 0) {
+            // Rải tiếp và đệ quy
+            // resetSquare(theNextId, newCardsState);
+            // renderMoon(point, theNextId, theNextPoint, newCardsState);
+            const gameStateNext = gameState;
+            gameState["clickedID"] = theNextId;
+            
+            handleArrowClick(newCardsState);
+        } else if (theNextPoint === 0 && theAfterNextPoint > 0) {
+            // Ăn
+            let result = turnResult(
+                newCardsState,
+                movingMap,
+                movingMap[validateIndex(startIndex + point + 1)] - 1
+            );
+            gameState.isPlayerTwoNext
+                ? setGamteState((prevState) => ({
+                      ...prevState,
+                      player2Point: prevState.player2Point + result,
+                      isPlayerTwoNext: true,
+                  }))
+                : setGamteState((prevState) => ({
+                      ...prevState,
+                      player1Point: prevState.player1Point + result,
+                      isPlayerTwoNext: false,
+                  }));
+            setTimeLeftTwoNext((prevTime) => ({
+                timeLeft: 30,
+                isPlayerTwoNext: !prevTime.isPlayerTwoNext,
+            }));
+            setCountdown(true);
+            return;
+        } else if (theNextPoint === 0 && theAfterNextPoint === 0) {
+            return;
+        }
+    };
+
     const renderMoonAfterBorrow = (point, newCardsState) => {
         let movingMap = gameState.map;
         let cardList = document.querySelectorAll(".card");
+
         for (let index = 1; index < 6; index++) {
             setTimeout(() => {
                 document.getElementById("arrowClick").play();
@@ -434,7 +353,7 @@ export default function Board() {
         }
     };
 
-    // Cơ chế rải nếu hết quân
+    // Cơ chế rải nếu hết quân - Chưa render lại giao diện
     const borrowPieces = (point, newCardsState) => {
         setTimeout(() => {
             if (!gameState.isPlayerTwoNext) {
@@ -494,15 +413,43 @@ export default function Board() {
     };
 
     // arrow click handle
-    let arrowClick = () => {
+    let arrowClick = (newCardsStateCurrent) => {
         let newCardsState = cardsState;
         let point = newCardsState[gameState.clickedID - 1].point;
-        setCountdown(false);
+
         newCardsState[gameState.clickedID - 1] = {
             ...newCardsState[gameState.clickedID - 1],
             point: 0,
             pointArr: [],
         };
+        setCountdown(false);
+        if (newCardsStateCurrent) {
+            newCardsState = newCardsStateCurrent;
+            point = newCardsState[gameState.clickedID - 1].point;
+            if (
+                (gameState.lastCardIndex === 6 &&
+                    gameState.movingLeft === "forward") ||
+                (gameState.lastCardIndex === 5 &&
+                    gameState.movingLeft === "forward") ||
+                (gameState.lastCardIndex === 10 &&
+                    gameState.movingLeft === "backward") ||
+                (gameState.lastCardIndex === 1 &&
+                    gameState.movingLeft === "backward")
+            ) {
+                point -= 10;
+                newCardsState[gameState.clickedID - 1] = {
+                    ...newCardsState[gameState.clickedID - 1],
+                    point: 10,
+                    pointArr: [0],
+                };
+            } else {
+                newCardsState[gameState.clickedID - 1] = {
+                    ...newCardsState[gameState.clickedID - 1],
+                    point: 0,
+                    pointArr: [],
+                };
+            }
+        }
 
         newCardsState = newCardsState.map((card) => ({
             ...card,
@@ -519,19 +466,30 @@ export default function Board() {
                 ...prevState,
                 isPlayerTwoNext: !prevState.isPlayerTwoNext,
             }));
-            setCountdown(true);
             changeTurn(gameState.isPlayerTwoNext);
         }, 500 * point);
 
         borrowPieces(point, newCardsState);
     };
 
-    const handleArrowClick = () => {
-        let newCardsState = cardsState;
+    const handleArrowClick = (newCardsStateCurrent) => {
+        let newCardsState = newCardsStateCurrent;
         let direct = gameState.movingLeft;
         let player = gameState.isPlayerTwoNext ? 2 : 1;
         let gameMap = getMovingMap(direct, player);
         let point = newCardsState[gameState.clickedID - 1].point;
+        if (
+            (gameState.lastCardIndex === 6 &&
+                gameState.movingLeft === "forward") ||
+            (gameState.lastCardIndex === 5 &&
+                gameState.movingLeft === "forward") ||
+            (gameState.lastCardIndex === 10 &&
+                gameState.movingLeft === "backward") ||
+            (gameState.lastCardIndex === 1 &&
+                gameState.movingLeft === "backward")
+        ) {
+            point -= 10;
+        }
         // get the locate of clicked card and add 'point' step
         let indexOfMap = validateIndex(
             gameMap.findIndex((a) => a == gameState.clickedID) + point
@@ -543,13 +501,12 @@ export default function Board() {
             ...newCardsState[indexLocate],
             isGreen: true,
         };
-        setGamteState((prevState) => ({
-            ...prevState,
-            movingLeft: direct,
-            map: gameMap,
-            lastCardIndex: indexLocate,
-        }));
-        arrowClick();
+        const gameStateClone = gameState;
+        gameStateClone["movingLeft"] = direct;
+        gameStateClone["map"] = gameMap;
+        gameStateClone["lastCardIndex"] = indexLocate;
+        setGamteState(gameStateClone)
+        arrowClick(newCardsStateCurrent);
     };
 
     let turnResult = (cardState, movingMap, nextCardIndex) => {
