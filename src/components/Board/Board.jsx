@@ -3,11 +3,11 @@ import {
     getMovingMap,
     displayArrow,
     validateIndex,
-} from './Board_Function';
-import React, { useState, useEffect } from 'react';
-import gameData from '../../data/InitialData';
-import Card from '../Card/Card';
-import Point from '../Point/Point';
+} from "./Board_Function";
+import React, { useState, useEffect } from "react";
+import gameData from "../../data/InitialData";
+import Card from "../Card/Card";
+import Point from "../Point/Point";
 
 export default function Board() {
     const [cardsState, setCardsData] = useState(gameData);
@@ -20,6 +20,7 @@ export default function Board() {
         player1Point: 0,
         player2Point: 0,
     });
+    const [countdown, setCountdown] = useState(true);
     // Thời gian còn lại (đơn vị: giây) cho mỗi người chơi
     const [timeLeftTwoNext, setTimeLeftTwoNext] = useState({
         timeLeft: 30,
@@ -40,23 +41,35 @@ export default function Board() {
     };
 
     useEffect(() => {
-        const timer = setInterval(() => {
-            setTimeLeftTwoNext((prevTime) => ({
-                ...prevTime,
-                timeLeft: timeLeftTwoNext.timeLeft - 1,
-            }));
-        }, 1000);
+        let timer;
+        if (countdown) {
+            timer = setInterval(() => {
+                setTimeLeftTwoNext((prevTime) => ({
+                    ...prevTime,
+                    timeLeft: timeLeftTwoNext.timeLeft - 1,
+                }));
+            }, 1000);
+        }
 
         // Khi thời gian còn lại hết, chuyển qua người chơi tiếp theo
         if (timeLeftTwoNext.timeLeft === 0) {
+            let newCardsState = cardsState;
             setGamteState((prevState) => ({
                 ...prevState,
                 isPlayerTwoNext: !prevState.isPlayerTwoNext,
+            }));
+            newCardsState = newCardsState.map((card) => ({
+                ...card,
+                isChoosen: false,
+                displayLeftArrow: false,
+                displayRightArrow: false,
+                isGreen: false,
             }));
             setTimeLeftTwoNext((prevTime) => ({
                 timeLeft: 30,
                 isPlayerTwoNext: !prevTime.isPlayerTwoNext,
             }));
+            setCountdown(true);
         }
 
         // Xóa interval khi component bị unmount hoặc khi chuyển người chơi
@@ -80,11 +93,20 @@ export default function Board() {
                 ...prevState,
                 isPlayerTwoNext: !prevState.isPlayerTwoNext,
             }));
+            setTimeLeftTwoNext((prevTime) => ({
+                timeLeft: 30,
+                isPlayerTwoNext: !prevTime.isPlayerTwoNext,
+            }));
+            setCountdown(true);
         }
-        setTimeLeftTwoNext((prevTime) => ({
-            timeLeft: 30,
-            isPlayerTwoNext: !prevTime.isPlayerTwoNext,
-        }));
+        // let newCardsState = cardsState;
+        // newCardsState = newCardsState.map((card) => ({
+        //     ...card,
+        //     isChoosen: false,
+        //     displayLeftArrow: false,
+        //     displayRightArrow: false,
+        //     isGreen: false,
+        // }));
     };
 
     // manage Game State
@@ -100,7 +122,7 @@ export default function Board() {
     // hover arrow handle
     let hoverArrow = (isLeft) => {
         let newCardsState = cardsState;
-        let direct = isLeft ? 'backward' : 'forward';
+        let direct = isLeft ? "backward" : "forward";
         let player = gameState.isPlayerTwoNext ? 2 : 1;
         let gameMap = getMovingMap(direct, player);
         let point = newCardsState[gameState.clickedID - 1].point;
@@ -135,21 +157,22 @@ export default function Board() {
     };
 
     const resetSquare = (theId, newCardsState) => {
-        setCardsData(() => [
-            ...newCardsState.map((item) => {
-                if (item.id === theId) {
-                    return {
-                        ...item,
-                        point: 0,
-                    };
-                } else return item;
-            }),
-        ]);
+        let cardList;
+        setTimeout(() => {
+            cardList = newCardsState.map((el) => {
+                if (el.id === theId) {
+                    el.point = 0;
+                    el.pointArr = [];
+                }
+                return el;
+            });
+            setCardsData(cardList);
+        }, theId);
     };
 
     const renderMoon = (point, theId, thePoint, newCardsState) => {
         let movingMap = gameState.map;
-        let cardList = document.querySelectorAll('.card');
+        let cardList = document.querySelectorAll(".card");
         let startPoint = -1;
         for (let i = 0; i < movingMap.length; i++) {
             if (movingMap[i] === theId) {
@@ -160,7 +183,7 @@ export default function Board() {
 
         for (let index = 1; index <= thePoint; index++) {
             setTimeout(() => {
-                document.getElementById('arrowClick').play();
+                document.getElementById("arrowClick").play();
                 setCardsData(() => [...newCardsState]);
 
                 let indexOfMap = validateIndex(startPoint);
@@ -168,9 +191,9 @@ export default function Board() {
                 let indexLocate = movingMap[indexOfMap] - 1;
 
                 // indicate which card is changing point
-                cardList[indexLocate].classList.add('movingShadow');
+                cardList[indexLocate].classList.add("movingShadow");
                 setTimeout(() => {
-                    cardList[indexLocate].classList.remove('movingShadow');
+                    cardList[indexLocate].classList.remove("movingShadow");
                 }, 500);
 
                 // update card
@@ -194,9 +217,8 @@ export default function Board() {
                     let result = turnResult(
                         newCardsState,
                         movingMap,
-                        movingMap[validateIndex(1 + point + 1)] - 1
+                        movingMap[validateIndex(indexLocate + 1)] - 1
                     );
-
                     gameState.isPlayerTwoNext
                         ? setGamteState((prevState) => ({
                               ...prevState,
@@ -206,8 +228,16 @@ export default function Board() {
                               ...prevState,
                               player1Point: prevState.player1Point + result,
                           }));
+                    setTimeLeftTwoNext((prevTime) => ({
+                        timeLeft: 30,
+                        isPlayerTwoNext: !prevTime.isPlayerTwoNext,
+                    }));
+                    setGamteState((prevState) => ({
+                        ...prevState,
+                        isPlayerTwoNext: !prevState.isPlayerTwoNext,
+                    }));
+                    setCountdown(true);
                 }
-
                 startPoint++;
             }, 500 * index);
         }
@@ -218,7 +248,7 @@ export default function Board() {
         let theNextId = -1;
         let theAfterNextId = -1;
 
-        if (gameState.movingLeft == 'forward') {
+        if (gameState.movingLeft == "forward") {
             for (let index = 0; index < gameState.map.length; index++) {
                 let item = gameState.map[index];
                 if (item === gameState.lastCardIndex + 1) {
@@ -261,12 +291,12 @@ export default function Board() {
                 setGamteState((prevState) => ({
                     ...prevState,
                     clickedID:
-                        gameState.movingLeft === 'forward'
+                        gameState.movingLeft === "forward"
                             ? gameState.lastCardIndex + 1
                             : gameState.lastCardIndex - 1,
                 }));
                 handleArrowClick();
-            }, 600);
+            }, 4000);
         } else if (theNextPoint === 0 && theAfterNextPoint > 0) {
             // Ăn và đệ quy
             return;
@@ -277,12 +307,12 @@ export default function Board() {
 
     const renderMoonEachCard = (point, newCardsState) => {
         let movingMap = gameState.map;
-        let cardList = document.querySelectorAll('.card');
+        let cardList = document.querySelectorAll(".card");
         let startIndex = movingMap.findIndex((a) => a == gameState.clickedID);
 
         for (let index = 1; index <= point; index++) {
             setTimeout(() => {
-                document.getElementById('arrowClick').play();
+                document.getElementById("arrowClick").play();
                 setCardsData(() => [...newCardsState]);
 
                 let indexOfMap = validateIndex(startIndex + index);
@@ -290,9 +320,9 @@ export default function Board() {
                 let indexLocate = movingMap[indexOfMap] - 1;
 
                 // indicate which card is changing point
-                cardList[indexLocate].classList.add('movingShadow');
+                cardList[indexLocate].classList.add("movingShadow");
                 setTimeout(() => {
-                    cardList[indexLocate].classList.remove('movingShadow');
+                    cardList[indexLocate].classList.remove("movingShadow");
                 }, 500);
 
                 // update card
@@ -313,23 +343,29 @@ export default function Board() {
                 }
 
                 if (index == point) {
-                    handleContinueSpread(point, newCardsState);
+                    if (
+                        cardsState[
+                            movingMap[validateIndex(startIndex + point + 1)] - 1
+                        ].point > 0
+                    ) {
+                        handleContinueSpread(point, newCardsState);
+                    } else {
+                        let result = turnResult(
+                            newCardsState,
+                            movingMap,
+                            movingMap[validateIndex(startIndex + point + 1)] - 1
+                        );
 
-                    let result = turnResult(
-                        newCardsState,
-                        movingMap,
-                        movingMap[validateIndex(startIndex + point + 1)] - 1
-                    );
-
-                    gameState.isPlayerTwoNext
-                        ? setGamteState((prevState) => ({
-                              ...prevState,
-                              player2Point: prevState.player2Point + result,
-                          }))
-                        : setGamteState((prevState) => ({
-                              ...prevState,
-                              player1Point: prevState.player1Point + result,
-                          }));
+                        gameState.isPlayerTwoNext
+                            ? setGamteState((prevState) => ({
+                                  ...prevState,
+                                  player2Point: prevState.player2Point + result,
+                              }))
+                            : setGamteState((prevState) => ({
+                                  ...prevState,
+                                  player1Point: prevState.player1Point + result,
+                              }));
+                    }
                 }
             }, 500 * index);
         }
@@ -338,11 +374,10 @@ export default function Board() {
 
     const renderMoonAfterBorrow = (point, newCardsState) => {
         let movingMap = gameState.map;
-        let cardList = document.querySelectorAll('.card');
-
+        let cardList = document.querySelectorAll(".card");
         for (let index = 1; index < 6; index++) {
             setTimeout(() => {
-                document.getElementById('arrowClick').play();
+                document.getElementById("arrowClick").play();
                 setCardsData(() => [...newCardsState]);
 
                 let indexOfMap = validateIndex(index);
@@ -350,9 +385,9 @@ export default function Board() {
                 let indexLocate = movingMap[indexOfMap] - 1;
 
                 // indicate which card is changing point
-                cardList[indexLocate].classList.add('movingShadow');
+                cardList[indexLocate].classList.add("movingShadow");
                 setTimeout(() => {
-                    cardList[indexLocate].classList.remove('movingShadow');
+                    cardList[indexLocate].classList.remove("movingShadow");
                 }, 500);
 
                 // update card
@@ -456,7 +491,7 @@ export default function Board() {
     let arrowClick = () => {
         let newCardsState = cardsState;
         let point = newCardsState[gameState.clickedID - 1].point;
-
+        setCountdown(false);
         newCardsState[gameState.clickedID - 1] = {
             ...newCardsState[gameState.clickedID - 1],
             point: 0,
@@ -478,6 +513,7 @@ export default function Board() {
                 ...prevState,
                 isPlayerTwoNext: !prevState.isPlayerTwoNext,
             }));
+            setCountdown(true);
             changeTurn(gameState.isPlayerTwoNext);
         }, 500 * point);
 
@@ -520,7 +556,7 @@ export default function Board() {
             //      check point = Card 8.point == 0 ? getPoint(Card 9) && ++ checkPoint : return (-2-)
             //      while checkPoint == 0 => loop (-2-)
             let checkPoint = 0;
-            let cardList = document.querySelectorAll('.card');
+            let cardList = document.querySelectorAll(".card");
             let getPointCardIndex;
             // get which card is next
             let mapIndex = validateIndex(
@@ -559,11 +595,11 @@ export default function Board() {
 
                 // console.log("cardState:", cardState);
                 setCardsData(() => [...cardState]);
-                document.getElementById('getPoint').play();
-                cardList[getPointCardIndex].classList.add('movingShadow');
+                document.getElementById("getPoint").play();
+                cardList[getPointCardIndex].classList.add("movingShadow");
                 setTimeout(() => {
                     cardList[getPointCardIndex].classList.remove(
-                        'movingShadow'
+                        "movingShadow"
                     );
                 }, 500);
 
@@ -580,7 +616,7 @@ export default function Board() {
 
     let renderCards = cardsState.map((item) => (
         <Card
-            key={item.id + 'card'}
+            key={item.id + "card"}
             data={item}
             isPlayerTwoNext={gameState.isPlayerTwoNext}
             cardClick={() => displayArrowClick(item.id)}
@@ -611,7 +647,7 @@ export default function Board() {
                 />
                 <div
                     id="board"
-                    className={`${isEndGame ? 'disable' : ''}`}
+                    className={`${isEndGame ? "disable" : ""}`}
                     onPointerMove={(e) => handlePointerMove(e)}
                 >
                     {renderCards}

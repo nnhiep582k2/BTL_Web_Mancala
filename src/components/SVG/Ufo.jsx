@@ -6,7 +6,7 @@ export default function Ufo(props) {
     if (props.point >= 10 && props.isUFO) {
         for (let index = 0; index < props.point - 10; index++) {
             renderMoon.push(
-                <div className="moon">
+                <div className="moon" key={index}>
                     <div className="craters"></div>
                 </div>
             );
@@ -14,7 +14,7 @@ export default function Ufo(props) {
     } else {
         for (let index = 0; index < props.point; index++) {
             renderMoon.push(
-                <div className="moon">
+                <div className="moon" key={index}>
                     <div className="craters"></div>
                 </div>
             );
