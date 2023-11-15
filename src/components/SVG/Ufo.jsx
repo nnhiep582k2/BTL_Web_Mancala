@@ -1,6 +1,17 @@
-import React from 'react';
+import React from "react";
 
 export default function Ufo(props) {
+    const renderMandarin = () => {
+        // check hiển thị quan hay không
+        if (props.point >= 10 && props.isUFO) {
+            return (
+                <div className="moon moonMandarin">
+                    <div className="craters"></div>
+                </div>
+            );
+        }
+    };
+
     const renderMoon = [];
     // render các dân trong quan
     if (props.point >= 10 && props.isUFO) {
@@ -85,14 +96,10 @@ export default function Ufo(props) {
                     </g>
                 </g>
             </svg>
-            <div className="ufo__point">
-                {props.point >= 10 && props.isUFO && (
-                    <div className="moon moonMandarin">
-                        <div className="craters"></div>
-                    </div>
-                )}
+            <p className="ufo__point">
+                {renderMandarin()}
                 {renderMoon}
-            </div>
+            </p>
         </div>
     );
 }
