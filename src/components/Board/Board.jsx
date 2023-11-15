@@ -261,6 +261,9 @@ export default function Board() {
                 theNextId = 1;
                 theAfterNextId = 2;
             }
+            if(theAfterNextId == undefined && theNextId === 7){
+                theAfterNextId = 1;
+            }
         } else {
             for (let index = gameState.map.length - 1; index >= 0; index--) {
                 let item = gameState.map[index];
@@ -274,12 +277,15 @@ export default function Board() {
                 theNextId = 7;
                 theAfterNextId = 8;
             }
+            if(theAfterNextId == undefined && theNextId === 1){
+                theAfterNextId = 7;
+            }
         }
 
-        let theNextPoint = newCardsState.filter(
+        let theNextPoint = theNextId && newCardsState.filter(
             (item) => item.id === theNextId
         )[0].point;
-        let theAfterNextPoint = newCardsState.filter(
+        let theAfterNextPoint = theAfterNextId && newCardsState.filter(
             (item) => item.id === theAfterNextId
         )[0].point;
 
