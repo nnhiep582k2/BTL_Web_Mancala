@@ -70,7 +70,8 @@ export default function Board() {
 
     let changeTurn = (isP2) => {
         let sum = 0;
-        if (isP2) {
+        if (isP2) { //computer
+            evaluation();
             for (let index = 1; index < 6; index++) {
                 sum += cardsState[index].point;
             }
@@ -592,6 +593,56 @@ export default function Board() {
         (cardsState[0].point === 0 && cardsState[11].point === 0) ||
         gameState.player1Point > 35 ||
         gameState.player2Point > 35;
+
+    class Option{
+        position // vị trí của ô được click (trong khoảng 2->6)
+        direct  // hướng đi
+        point // số điểm ăn được
+    }
+
+    //Hàm lượng giá
+    const evaluation = () => {
+        const optionPriority = Array<Option>([]);
+        const computerCardState  = cardsState.filter((element) => element.id >=2 && element.id <=6)
+        
+        computerCardState.forEach(card => {
+            // Xét đi ngược chiều kim đồng hồ
+            const mapBackward = getMovingMap('backward', 2)
+            const resultBackward = turnResult(
+                card,
+                mapBackward,
+                mapBackward[validateIndex(card.id + card.point + 1)] - 1
+            );
+
+            optionPriority.push(
+                new Option(
+                    position = card.id, 
+                    direct = 'backward', 
+                    point = resultBackward
+                )
+            );
+
+            // Xét đi xuôi chiều kim đồng hồ
+            const mapForward = getMovingMap('forward', 2)
+            const resultForward = turnResult(
+                card,
+                mapForward,
+                mapForward[validateIndex(card.id + card.point + 1)] - 1
+            );
+
+            optionPriority.push(
+                new Option(
+                    position = card.id, 
+                    direct = 'forward', 
+                    point = resultForward
+                )
+            );
+        });
+
+        //trả về một mảng là thứ tự ưu tiên chọn nước đi từ khó -> dễ 
+        return optionPriority.sort((a, b) => b.point - a.point);
+    }
+
     return (
         <>
             {isEndGame && (
