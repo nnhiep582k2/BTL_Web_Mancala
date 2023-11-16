@@ -9,7 +9,7 @@ import gameData from "../../data/InitialData";
 import Card from "../Card/Card";
 import Point from "../Point/Point";
 
-export default function Board() {
+export default function BoardMachine() {
     const [cardsState, setCardsData] = useState(gameData);
     const [gameState, setGamteState] = useState({
         movingLeft: false,
@@ -71,6 +71,9 @@ export default function Board() {
     let changeTurn = (isP2) => {
         let sum = 0;
         if (isP2) {
+            //computer
+            console.log(evaluation());
+            debugger;
             for (let index = 1; index < 6; index++) {
                 sum += cardsState[index].point;
             }
@@ -586,7 +589,7 @@ export default function Board() {
             hoverArrow={() => hoverArrow(item.displayLeftArrow)}
             leaveArrow={() => leaveArrow()}
             clickArrow={() => arrowClick()}
-            isPlayMachine={false}
+            isPlayMachine={true}
         />
     ));
     const isEndGame =
@@ -600,7 +603,50 @@ export default function Board() {
         point; // số điểm ăn được
     }
 
-   
+    //Hàm lượng giá
+    const evaluation = () => {
+        const optionPriority = Array < Option > [];
+        const computerCardState = cardsState.filter(
+            (element) => element.id >= 2 && element.id <= 6
+        );
+
+        computerCardState.forEach((card) => {
+            // Xét đi ngược chiều kim đồng hồ
+            const mapBackward = getMovingMap("backward", 2);
+            const resultBackward = turnResult(
+                card,
+                mapBackward,
+                mapBackward[validateIndex(card.id + card.point + 1)] - 1
+            );
+
+            optionPriority.push(
+                new Option(
+                    (position = card.id),
+                    (direct = "backward"),
+                    (point = resultBackward)
+                )
+            );
+
+            // Xét đi xuôi chiều kim đồng hồ
+            const mapForward = getMovingMap("forward", 2);
+            const resultForward = turnResult(
+                card,
+                mapForward,
+                mapForward[validateIndex(card.id + card.point + 1)] - 1
+            );
+
+            optionPriority.push(
+                new Option(
+                    (position = card.id),
+                    (direct = "forward"),
+                    (point = resultForward)
+                )
+            );
+        });
+
+        //trả về một mảng là thứ tự ưu tiên chọn nước đi từ khó -> dễ
+        return optionPriority.sort((a, b) => b.point - a.point);
+    };
 
     return (
         <>
@@ -617,7 +663,7 @@ export default function Board() {
                     isEndGame={isEndGame}
                     timeLeft={timeLeftTwoNext.timeLeft}
                     isPlayer={timeLeftTwoNext.isPlayerTwoNext}
-                    isPlayMachine={false}
+                    isPlayMachine={true}
                 />
                 <div
                     id="board"
