@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export default function Point({
     isPlayerTwoNext,
@@ -7,13 +7,22 @@ export default function Point({
     isEndGame,
     timeLeft,
     isPlayer,
+    isPlayMachine,
 }) {
     let congratSound = () => {
         if (isEndGame) {
             setTimeout(() => {
-                document.getElementById('winnerAu').play();
+                document.getElementById("winnerAu").play();
             }, 300);
-            return (
+            return isPlayMachine ? (
+                <div>
+                    <h3>Player {p1Point > p2Point ? "" : "machine"} won</h3>
+                    <div className="winner_detail">
+                        <h2>Player: {p1Point} points</h2>
+                        <h2>Machine: {p2Point} points</h2>
+                    </div>
+                </div>
+            ) : (
                 <div>
                     <h3>Player {p1Point > p2Point ? 1 : 2} won</h3>
                     <div className="winner_detail">
@@ -26,14 +35,15 @@ export default function Point({
     };
 
     return (
-        <div className={`gameState ${isEndGame ? 'show_winner' : null} `}>
+        <div className={`gameState ${isEndGame ? "show_winner" : null} `}>
             <div className="playerState">
                 <div
                     className={`player ${
-                        isPlayerTwoNext ? null : 'currentPlayer'
+                        isPlayerTwoNext ? null : "currentPlayer"
                     }`}
                 >
-                    P1
+                    {isPlayMachine ? "Player" : "P1"}
+
                     {!isPlayer && <p className="currentPlayer">{timeLeft}</p>}
                 </div>
                 <p className="point">{p1Point}</p>
@@ -41,10 +51,10 @@ export default function Point({
                 <p className="point">{p2Point}</p>
                 <div
                     className={`player ${
-                        isPlayerTwoNext ? 'currentPlayer' : null
+                        isPlayerTwoNext ? "currentPlayer" : null
                     }`}
                 >
-                    P2
+                    {isPlayMachine ? "Machine" : "P2"}
                     {isPlayer && <p className="currentPlayer">{timeLeft}</p>}
                 </div>
             </div>

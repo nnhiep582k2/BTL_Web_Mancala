@@ -1,9 +1,9 @@
-import React from 'react';
-import Ufo from '../SVG/Ufo';
+import React from "react";
+import Ufo from "../SVG/Ufo";
 
 export default function Square(props) {
     let renderMoon = props.data.pointArr.map((p) => (
-        <div className="moon" key={p + 'moon'}>
+        <div className="moon" key={p + "moon"}>
             <div className="craters"></div>
         </div>
     ));
@@ -33,7 +33,7 @@ export default function Square(props) {
             {props.data.isUFO ? (
                 <div
                     className={`card ${
-                        props.data.isGreen ? 'locateShadow' : ''
+                        props.data.isGreen ? "locateShadow" : ""
                     }`}
                     onClick={
                         props.data.displayLeftArrow ||
@@ -70,8 +70,8 @@ export default function Square(props) {
                 // Player 1 Cards
                 <div
                     className={`card ${
-                        props.data.isChoosen ? 'choosing-state' : ''
-                    } ${props.data.isGreen ? 'locateShadow' : ''} `}
+                        props.data.isChoosen ? "choosing-state" : ""
+                    } ${props.data.isGreen ? "locateShadow" : ""} `}
                     onClick={
                         props.data.displayLeftArrow ||
                         props.data.displayRightArrow
@@ -95,7 +95,7 @@ export default function Square(props) {
                 >
                     <div
                         className={`card-content ${
-                            props.isPlayerTwoNext ? 'new-moon' : ''
+                            props.isPlayerTwoNext ? "new-moon" : ""
                         }`}
                     >
                         {!props.data.displayLeftArrow &&
@@ -104,12 +104,12 @@ export default function Square(props) {
                             : renderArrow(props.data.displayLeftArrow)}
                     </div>
                 </div>
-            ) : (
-                // Player 2 Cards
+            ) : // Player 2 Cards
+            !props.isPlayMachine ? (
                 <div
                     className={`card ${
-                        props.data.isChoosen ? 'choosing-state' : ''
-                    } ${props.data.isGreen ? 'locateShadow' : ''}`}
+                        props.data.isChoosen ? "choosing-state" : ""
+                    } ${props.data.isGreen ? "locateShadow" : ""}`}
                     onClick={
                         props.data.displayLeftArrow ||
                         props.data.displayRightArrow
@@ -133,7 +133,24 @@ export default function Square(props) {
                 >
                     <div
                         className={`card-content ${
-                            props.isPlayerTwoNext ? '' : 'new-moon'
+                            props.isPlayerTwoNext ? "" : "new-moon"
+                        }`}
+                    >
+                        {!props.data.displayLeftArrow &&
+                        !props.data.displayRightArrow
+                            ? renderMoon
+                            : renderArrow(props.data.displayLeftArrow)}
+                    </div>
+                </div>
+            ) : (
+                <div
+                    className={`card ${
+                        props.data.isChoosen ? "choosing-state" : ""
+                    } ${props.data.isGreen ? "locateShadow" : ""}`}
+                >
+                    <div
+                        className={`card-content ${
+                            props.isPlayerTwoNext ? "" : "new-moon"
                         }`}
                     >
                         {!props.data.displayLeftArrow &&
