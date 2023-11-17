@@ -11,6 +11,7 @@ import Point from "../Point/Point";
 
 export default function BoardMachine() {
     const [cardsState, setCardsData] = useState(gameData);
+    const [ClonecardsState, setCloneCardsData] = useState([]);
     const [gameState, setGamteState] = useState({
         movingLeft: false,
         isPlayerTwoNext: false,
@@ -20,13 +21,32 @@ export default function BoardMachine() {
         player1Point: 0,
         player2Point: 0,
     });
+    const [cloneGameState, setCloneGamteState] = useState({
+        movingLeft: false,
+        isPlayerTwoNext: false,
+        clickedID: 0,
+        lastCardIndex: 0,
+        map: [],
+        player1Point: 0,
+        player2Point: 0,
+    });
     const [countdown, setCountdown] = useState(true);
+    const [position, setPosition] = useState({
+        position: 0,
+        direct: null,
+    });
+
+    let optionPriority = [];
     // Thời gian còn lại (đơn vị: giây) cho mỗi người chơi
     const [timeLeftTwoNext, setTimeLeftTwoNext] = useState({
         timeLeft: 30,
         isPlayerTwoNext: false,
     });
 
+    const [option, setOption] = useState({
+        i: 0,
+        direct: null,
+    });
     const handleRePlay = () => {
         setCardsData(gameData);
         setGamteState({
@@ -39,6 +59,7 @@ export default function BoardMachine() {
             player2Point: 0,
         });
     };
+    let maxPoint = [];
 
     useEffect(() => {
         let timer;
@@ -68,12 +89,19 @@ export default function BoardMachine() {
         return () => clearInterval(timer);
     }, [timeLeftTwoNext.timeLeft]);
 
+    useEffect(() => {
+        if (timeLeftTwoNext.isPlayerTwoNext) {
+            let state = [];
+            state = [...cardsState];
+            setCloneCardsData(state);
+            setCloneGamteState(gameState);
+            evaluation();
+        }
+    }, [timeLeftTwoNext.isPlayerTwoNext]);
+
     let changeTurn = (isP2) => {
         let sum = 0;
         if (isP2) {
-            //computer
-            console.log(evaluation());
-            debugger;
             for (let index = 1; index < 6; index++) {
                 sum += cardsState[index].point;
             }
@@ -150,17 +178,19 @@ export default function BoardMachine() {
 
         for (let index = 1; index <= point; index++) {
             setTimeout(() => {
-                document.getElementById("arrowClick").play();
+                document.getElementById("arrowClick") &&
+                    document.getElementById("arrowClick").play();
                 setCardsData(() => [...newCardsState]);
 
                 let indexOfMap = validateIndex(startIndex + index);
                 // get the locate of the card
                 let indexLocate = movingMap[indexOfMap] - 1;
-
                 // indicate which card is changing point
-                cardList[indexLocate].classList.add("movingShadow");
+                cardList[indexLocate] &&
+                    cardList[indexLocate].classList.add("movingShadow");
                 setTimeout(() => {
-                    cardList[indexLocate].classList.remove("movingShadow");
+                    cardList[indexLocate] &&
+                        cardList[indexLocate].classList.remove("movingShadow");
                 }, 500);
 
                 // update card
@@ -288,11 +318,34 @@ export default function BoardMachine() {
                       player1Point: prevState.player1Point + result,
                       isPlayerTwoNext: false,
                   }));
-            setTimeLeftTwoNext((prevTime) => ({
-                timeLeft: 30,
-                isPlayerTwoNext: !prevTime.isPlayerTwoNext,
-            }));
-            setCountdown(true);
+            if (!gameState.isPlayerTwoNext) {
+                setTimeLeftTwoNext((prevTime) => ({
+                    timeLeft: 30,
+                    isPlayerTwoNext: !prevTime.isPlayerTwoNext,
+                }));
+                setCountdown(true);
+            } else {
+                optionPriority.push({
+                    position: option.i,
+                    direct: option.direct,
+                    point: result,
+                });
+                let maxPoint;
+                let max = -9999999999;
+                for (let index = 0; index < optionPriority.length; index++) {
+                    const element = optionPriority[index];
+                    if (element.point > max) {
+                        maxPoint = {
+                            postion: element.position,
+                            direct: element.direct,
+                        };
+                    }
+                }
+                console.log(maxPoint);
+                // setPosition(maxPoint);
+                // resultValue = result;
+            }
+
             return;
         } else if (theNextPoint === 0 && theAfterNextPoint === 0) {
             return;
@@ -305,7 +358,8 @@ export default function BoardMachine() {
 
         for (let index = 1; index < 6; index++) {
             setTimeout(() => {
-                document.getElementById("arrowClick").play();
+                document.getElementById("arrowClick") &&
+                    document.getElementById("arrowClick").play();
                 setCardsData(() => [...newCardsState]);
 
                 let indexOfMap = validateIndex(index);
@@ -313,9 +367,11 @@ export default function BoardMachine() {
                 let indexLocate = movingMap[indexOfMap] - 1;
 
                 // indicate which card is changing point
-                cardList[indexLocate].classList.add("movingShadow");
+                cardList[indexLocate] &&
+                    cardList[indexLocate].classList.add("movingShadow");
                 setTimeout(() => {
-                    cardList[indexLocate].classList.remove("movingShadow");
+                    cardList[indexLocate] &&
+                        cardList[indexLocate].classList.remove("movingShadow");
                 }, 500);
 
                 // update card
@@ -417,6 +473,66 @@ export default function BoardMachine() {
 
     // arrow click handle
     let arrowClick = (newCardsStateCurrent) => {
+        let newCardsState = cardsState;
+        let point = newCardsState[gameState.clickedID - 1].point;
+
+        newCardsState[gameState.clickedID - 1] = {
+            ...newCardsState[gameState.clickedID - 1],
+            point: 0,
+            pointArr: [],
+        };
+        setCountdown(false);
+        if (newCardsStateCurrent) {
+            newCardsState = newCardsStateCurrent;
+            point = newCardsState[gameState.clickedID - 1].point;
+            if (
+                (gameState.lastCardIndex === 6 &&
+                    gameState.movingLeft === "forward") ||
+                (gameState.lastCardIndex === 5 &&
+                    gameState.movingLeft === "forward") ||
+                (gameState.lastCardIndex === 10 &&
+                    gameState.movingLeft === "backward") ||
+                (gameState.lastCardIndex === 1 &&
+                    gameState.movingLeft === "backward")
+            ) {
+                point -= 10;
+                newCardsState[gameState.clickedID - 1] = {
+                    ...newCardsState[gameState.clickedID - 1],
+                    point: 10,
+                    pointArr: [0],
+                };
+            } else {
+                newCardsState[gameState.clickedID - 1] = {
+                    ...newCardsState[gameState.clickedID - 1],
+                    point: 0,
+                    pointArr: [],
+                };
+            }
+        }
+
+        newCardsState = newCardsState.map((card) => ({
+            ...card,
+            isChoosen: false,
+            displayLeftArrow: false,
+            displayRightArrow: false,
+            isGreen: false,
+        }));
+
+        renderMoonEachCard(point, newCardsState);
+
+        setTimeout(() => {
+            setGamteState((prevState) => ({
+                ...prevState,
+                isPlayerTwoNext: !prevState.isPlayerTwoNext,
+            }));
+            changeTurn(gameState.isPlayerTwoNext);
+        }, 500 * point);
+
+        borrowPieces(point, newCardsState);
+    };
+
+    // arrow click handle
+    let arrowClickMachine = (newCardsStateCurrent) => {
         let newCardsState = cardsState;
         let point = newCardsState[gameState.clickedID - 1].point;
 
@@ -597,55 +713,88 @@ export default function BoardMachine() {
         gameState.player1Point > 35 ||
         gameState.player2Point > 35;
 
-    class Option {
-        position; // vị trí của ô được click (trong khoảng 2->6)
-        direct; // hướng đi
-        point; // số điểm ăn được
-    }
-
     //Hàm lượng giá
     const evaluation = () => {
-        const optionPriority = Array < Option > [];
-        const computerCardState = cardsState.filter(
-            (element) => element.id >= 2 && element.id <= 6
-        );
+        // const optionPriority = Array < Option > [];
+        // const computerCardState = cardsState.filter(
+        //     (element) => element.id >= 7 && element.id <= 11
+        // );
+        for (let i = 7; i <= 11; i++) {
+            // displayArrowClick(index);
+            let state = ClonecardsState;
+            state["clickedID"] = i;
+            let newCardsState = state;
+            const directAll = ["forward", "backward"];
+            for (let index = 0; index < directAll.length; index++) {
+                const element = directAll[index];
+                let direct = element;
+                let player = cloneGameState.isPlayerTwoNext ? 2 : 1;
+                let gameMap = getMovingMap(direct, player);
+                let point = newCardsState[cloneGameState.clickedID - 1].point;
+                // get the locate of clicked card and add 'point' step
+                let indexOfMap = validateIndex(
+                    gameMap.findIndex((a) => a == cloneGameState.clickedID) + point
+                );
+                // get the locate of the final mutated card
+                let indexLocate = gameMap[indexOfMap] - 1;
+                // make the final mutated card glowing
+                newCardsState[indexLocate] = {
+                    ...newCardsState[indexLocate],
+                    isGreen: true,
+                };
 
-        computerCardState.forEach((card) => {
-            // Xét đi ngược chiều kim đồng hồ
-            const mapBackward = getMovingMap("backward", 2);
-            const resultBackward = turnResult(
-                card,
-                mapBackward,
-                mapBackward[validateIndex(card.id + card.point + 1)] - 1
-            );
+                const GameStateClone = cloneGameState;
+                GameStateClone["movingLeft"] = direct;
+                GameStateClone["map"] = gameMap;
+                GameStateClone["lastCardIndex"] = indexLocate;
+                const optionClone = option;
+                optionClone["i"] = i;
+                optionClone["direct"] = direct;
+                setOption(optionClone);
+                setCloneGamteState(GameStateClone);
+                setCloneCardsData(() => [...newCardsState]);
+                debugger
+                arrowClickMachine();
+            }
+        }
+        //
 
-            optionPriority.push(
-                new Option(
-                    (position = card.id),
-                    (direct = "backward"),
-                    (point = resultBackward)
-                )
-            );
+        // computerCardState.forEach((card) => {
+        //     // Xét đi ngược chiều kim đồng hồ
+        //     const mapBackward = getMovingMap("backward", 2);
+        //     const resultBackward = turnResult(
+        //         cardsState,
+        //         mapBackward,
+        //         mapBackward[validateIndex(card.id + card.point + 1)] - 1
+        //     );
 
-            // Xét đi xuôi chiều kim đồng hồ
-            const mapForward = getMovingMap("forward", 2);
-            const resultForward = turnResult(
-                card,
-                mapForward,
-                mapForward[validateIndex(card.id + card.point + 1)] - 1
-            );
+        //     optionPriority.push(
+        //         new Option(
+        //             (position = card.id),
+        //             (direct = "backward"),
+        //             (point = resultBackward)
+        //         )
+        //     );
 
-            optionPriority.push(
-                new Option(
-                    (position = card.id),
-                    (direct = "forward"),
-                    (point = resultForward)
-                )
-            );
-        });
+        //     // Xét đi xuôi chiều kim đồng hồ
+        //     const mapForward = getMovingMap("forward", 2);
+        //     const resultForward = turnResult(
+        //         cardsState,
+        //         mapForward,
+        //         mapForward[validateIndex(card.id + card.point + 1)] - 1
+        //     );
 
-        //trả về một mảng là thứ tự ưu tiên chọn nước đi từ khó -> dễ
-        return optionPriority.sort((a, b) => b.point - a.point);
+        //     optionPriority.push(
+        //         new Option(
+        //             (position = card.id),
+        //             (direct = "forward"),
+        //             (point = resultForward)
+        //         )
+        //     );
+        // });
+
+        // //trả về một mảng là thứ tự ưu tiên chọn nước đi từ khó -> dễ
+        // return optionPriority.sort((a, b) => b.point - a.point);
     };
 
     return (

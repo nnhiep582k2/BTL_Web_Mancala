@@ -426,29 +426,29 @@ export default function Board() {
         if (newCardsStateCurrent) {
             newCardsState = newCardsStateCurrent;
             point = newCardsState[gameState.clickedID - 1].point;
-            if (
-                (gameState.lastCardIndex === 6 &&
-                    gameState.movingLeft === "forward") ||
-                (gameState.lastCardIndex === 5 &&
-                    gameState.movingLeft === "forward") ||
-                (gameState.lastCardIndex === 10 &&
-                    gameState.movingLeft === "backward") ||
-                (gameState.lastCardIndex === 1 &&
-                    gameState.movingLeft === "backward")
-            ) {
-                point -= 10;
-                newCardsState[gameState.clickedID - 1] = {
-                    ...newCardsState[gameState.clickedID - 1],
-                    point: 10,
-                    pointArr: [0],
-                };
-            } else {
-                newCardsState[gameState.clickedID - 1] = {
-                    ...newCardsState[gameState.clickedID - 1],
-                    point: 0,
-                    pointArr: [],
-                };
-            }
+        }
+        if (
+            (gameState.lastCardIndex === 6 &&
+                gameState.movingLeft === "forward") ||
+            (gameState.lastCardIndex === 5 &&
+                gameState.movingLeft === "forward") ||
+            (gameState.lastCardIndex === 10 &&
+                gameState.movingLeft === "backward") ||
+            (gameState.lastCardIndex === 1 &&
+                gameState.movingLeft === "backward")
+        ) {
+            point -= 10;
+            newCardsState[gameState.clickedID - 1] = {
+                ...newCardsState[gameState.clickedID - 1],
+                point: 10,
+                pointArr: [0],
+            };
+        } else {
+            newCardsState[gameState.clickedID - 1] = {
+                ...newCardsState[gameState.clickedID - 1],
+                point: 0,
+                pointArr: [],
+            };
         }
 
         newCardsState = newCardsState.map((card) => ({
@@ -489,6 +489,7 @@ export default function Board() {
                 gameState.movingLeft === "backward")
         ) {
             point -= 10;
+            debugger;
         }
         // get the locate of clicked card and add 'point' step
         let indexOfMap = validateIndex(
