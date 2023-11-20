@@ -91,11 +91,21 @@ export default function BoardMachine() {
 
     useEffect(() => {
         if (timeLeftTwoNext.isPlayerTwoNext) {
-            let state = [];
-            state = [...cardsState];
-            setCloneCardsData(state);
-            setCloneGamteState(gameState);
             evaluation();
+            if(maxPoint && maxPoint.length){
+                if (cardsState[maxPoint[0].postion - 1].point == 0) {
+                    return;
+                }
+                const gameStateClone = gameState;
+                gameStateClone["movingLeft"] = maxPoint[0].direct;
+                gameStateClone["clickedID"] = maxPoint[0].postion;
+                handleArrowClick(cardsState);
+                setTimeLeftTwoNext((prevTime) => ({
+                    timeLeft: 30,
+                    isPlayerTwoNext: !prevTime.isPlayerTwoNext,
+                }));
+                setCountdown(true);
+            }
         }
     }, [timeLeftTwoNext.isPlayerTwoNext]);
 
@@ -241,6 +251,47 @@ export default function BoardMachine() {
         return {};
     };
 
+    const renderMoonEachCardMachine = (point, newCardsState) => {
+        let movingMap = gameState.map;
+        let startIndex = movingMap.findIndex((a) => a == gameState.clickedID);
+        for (let index = 1; index <= point; index++) {
+            let cardStates = ClonecardsState;
+            newCardsState.forEach((el, index) => {
+                cardStates[index] = el;
+            });
+            let indexOfMap = validateIndex(startIndex + index);
+            // get the locate of the card
+            let indexLocate = movingMap[indexOfMap] - 1;
+            // update card
+            if (indexLocate == 0 || indexLocate == 11) {
+                newCardsState[indexLocate] = {
+                    ...newCardsState[indexLocate],
+                    point: newCardsState[indexLocate].point + 1,
+                };
+            } else {
+                newCardsState[indexLocate] = {
+                    ...newCardsState[indexLocate],
+                    point: newCardsState[indexLocate].point + 1,
+                    pointArr: [
+                        ...newCardsState[indexLocate].pointArr,
+                        newCardsState[indexLocate].point + 1,
+                    ],
+                };
+            }
+
+            if (index == point) {
+                // rải quân tiếp nếu có
+                handleContinueSpreadMachine(
+                    point,
+                    newCardsState,
+                    movingMap,
+                    startIndex
+                );
+            }
+        }
+        return {};
+    };
+
     // Rải quân tiếp
     const handleContinueSpread = (
         point,
@@ -330,20 +381,135 @@ export default function BoardMachine() {
                     direct: option.direct,
                     point: result,
                 });
-                let maxPoint;
+                let maxPointPriority;
                 let max = -9999999999;
                 for (let index = 0; index < optionPriority.length; index++) {
                     const element = optionPriority[index];
                     if (element.point > max) {
-                        maxPoint = {
+                        maxPointPriority = {
                             postion: element.position,
                             direct: element.direct,
+                            point: element.point
                         };
                     }
                 }
-                console.log(maxPoint);
+                maxPoint.push(maxPointPriority)
                 // setPosition(maxPoint);
                 // resultValue = result;
+            }
+
+            return;
+        } else if (theNextPoint === 0 && theAfterNextPoint === 0) {
+            return;
+        }
+    };
+
+    // Rải quân tiếp
+    const handleContinueSpreadMachine = (
+        point,
+        newCardsState,
+        movingMap,
+        startIndex
+    ) => {
+        let theNextId = -1;
+        let theAfterNextId = -1;
+
+        if (cloneGameState.movingLeft == "forward") {
+            for (let index = 0; index < cloneGameState.map.length; index++) {
+                let item = cloneGameState.map[index];
+                if (item === cloneGameState.lastCardIndex + 1) {
+                    theNextId = cloneGameState.map[index + 1];
+                    theAfterNextId = cloneGameState.map[index + 2];
+                    break;
+                }
+            }
+            if (theNextId == undefined) {
+                theNextId = 1;
+                theAfterNextId = 2;
+            }
+            if (theAfterNextId == undefined && theNextId === 7) {
+                theAfterNextId = 1;
+            }
+        } else {
+            for (
+                let index = cloneGameState.map.length - 1;
+                index >= 0;
+                index--
+            ) {
+                let item = cloneGameState.map[index];
+                if (item === cloneGameState.lastCardIndex + 1) {
+                    theNextId = cloneGameState.map[index + 1];
+                    theAfterNextId = cloneGameState.map[index + 2];
+                    break;
+                }
+            }
+            if (theNextId == undefined) {
+                theNextId = 7;
+                theAfterNextId = 8;
+            }
+            if (theAfterNextId == undefined && theNextId === 1) {
+                theAfterNextId = 7;
+            }
+        }
+
+        let theNextPoint =
+            theNextId >=0 &&
+            newCardsState.filter((item) => item.id === theNextId)[0].point;
+        let theAfterNextPoint =
+            theAfterNextId >= 0 &&
+            newCardsState.filter((item) => item.id === theAfterNextId)[0].point;
+
+        if (theNextPoint > 0) {
+            // Rải tiếp và đệ quy
+            // resetSquare(theNextId, newCardsState);
+            // renderMoon(point, theNextId, theNextPoint, newCardsState);
+            const gameStateNext = cloneGameState;
+            gameStateNext["clickedID"] = theNextId;
+
+            handleArrowClickMachine(newCardsState);
+        } else if (theNextPoint === 0 && theAfterNextPoint > 0) {
+            // Ăn
+            let result = turnResultMachine(
+                newCardsState,
+                movingMap,
+                movingMap[validateIndex(startIndex + point + 1)] - 1
+            );
+            cloneGameState.isPlayerTwoNext
+                ? setCloneGamteState((prevState) => ({
+                      ...prevState,
+                      player2Point: prevState.player2Point + result,
+                      isPlayerTwoNext: true,
+                  }))
+                : setCloneGamteState((prevState) => ({
+                      ...prevState,
+                      player1Point: prevState.player1Point + result,
+                      isPlayerTwoNext: false,
+                  }));
+            if (!cloneGameState.isPlayerTwoNext) {
+                setTimeLeftTwoNext((prevTime) => ({
+                    timeLeft: 30,
+                    isPlayerTwoNext: !prevTime.isPlayerTwoNext,
+                }));
+                setCountdown(true);
+            } else {
+                optionPriority.push({
+                    position: option.i,
+                    direct: option.direct,
+                    point: result,
+                });
+                let maxPointPriority;
+                let max = -9999999999;
+                for (let index = 0; index < optionPriority.length; index++) {
+                    const element = optionPriority[index];
+                    if (element.point > max) {
+                        maxPointPriority = {
+                            postion: element.position,
+                            direct: element.direct,
+                            point: element.point
+                        };
+                    }
+                }
+                maxPoint.push(maxPointPriority)
             }
 
             return;
@@ -484,30 +650,37 @@ export default function BoardMachine() {
         setCountdown(false);
         if (newCardsStateCurrent) {
             newCardsState = newCardsStateCurrent;
-            point = newCardsState[gameState.clickedID - 1].point;
-            if (
-                (gameState.lastCardIndex === 6 &&
-                    gameState.movingLeft === "forward") ||
-                (gameState.lastCardIndex === 5 &&
-                    gameState.movingLeft === "forward") ||
-                (gameState.lastCardIndex === 10 &&
-                    gameState.movingLeft === "backward") ||
-                (gameState.lastCardIndex === 1 &&
-                    gameState.movingLeft === "backward")
-            ) {
-                point -= 10;
-                newCardsState[gameState.clickedID - 1] = {
-                    ...newCardsState[gameState.clickedID - 1],
-                    point: 10,
-                    pointArr: [0],
-                };
-            } else {
-                newCardsState[gameState.clickedID - 1] = {
-                    ...newCardsState[gameState.clickedID - 1],
-                    point: 0,
-                    pointArr: [],
-                };
-            }
+            //point = newCardsStateCurrent[gameState.clickedID - 1].point;
+            newCardsState[gameState.clickedID - 1] = {
+                ...newCardsState[gameState.clickedID - 1],
+                point: 0,
+                pointArr: [],
+            };
+            // if (
+            //     (gameState.lastCardIndex === 6 &&
+            //         gameState.movingLeft === "forward") ||
+            //     (gameState.lastCardIndex === 5 &&
+            //         gameState.movingLeft === "forward") ||
+            //     (gameState.lastCardIndex === 10 &&
+            //         gameState.movingLeft === "backward") ||
+            //     (gameState.lastCardIndex === 1 &&
+            //         gameState.movingLeft === "backward")
+            // ) {
+            //     if(gameState.lastCardIndex === 5 || gameState.lastCardIndex === 10){
+            //         point -= 10;
+            //         newCardsState[gameState.clickedID - 1] = {
+            //             ...newCardsState[gameState.clickedID - 1],
+            //             point: 10,
+            //             pointArr: [0],
+            //         };
+            //     }
+            // } else {
+            //     newCardsState[gameState.clickedID - 1] = {
+            //         ...newCardsState[gameState.clickedID - 1],
+            //         point: 0,
+            //         pointArr: [],
+            //     };
+            // }
         }
 
         newCardsState = newCardsState.map((card) => ({
@@ -525,6 +698,7 @@ export default function BoardMachine() {
                 ...prevState,
                 isPlayerTwoNext: !prevState.isPlayerTwoNext,
             }));
+            
             changeTurn(gameState.isPlayerTwoNext);
         }, 500 * point);
 
@@ -533,41 +707,47 @@ export default function BoardMachine() {
 
     // arrow click handle
     let arrowClickMachine = (newCardsStateCurrent) => {
-        let newCardsState = cardsState;
-        let point = newCardsState[gameState.clickedID - 1].point;
+        let newCardsState = ClonecardsState;
+        let point = newCardsState[cloneGameState.clickedID - 1].point;
 
-        newCardsState[gameState.clickedID - 1] = {
-            ...newCardsState[gameState.clickedID - 1],
+        newCardsState[cloneGameState.clickedID - 1] = {
+            ...newCardsState[cloneGameState.clickedID - 1],
             point: 0,
             pointArr: [],
         };
         setCountdown(false);
         if (newCardsStateCurrent) {
             newCardsState = newCardsStateCurrent;
-            point = newCardsState[gameState.clickedID - 1].point;
-            if (
-                (gameState.lastCardIndex === 6 &&
-                    gameState.movingLeft === "forward") ||
-                (gameState.lastCardIndex === 5 &&
-                    gameState.movingLeft === "forward") ||
-                (gameState.lastCardIndex === 10 &&
-                    gameState.movingLeft === "backward") ||
-                (gameState.lastCardIndex === 1 &&
-                    gameState.movingLeft === "backward")
-            ) {
-                point -= 10;
-                newCardsState[gameState.clickedID - 1] = {
-                    ...newCardsState[gameState.clickedID - 1],
-                    point: 10,
-                    pointArr: [0],
-                };
-            } else {
-                newCardsState[gameState.clickedID - 1] = {
-                    ...newCardsState[gameState.clickedID - 1],
-                    point: 0,
-                    pointArr: [],
-                };
-            }
+            //point = newCardsStateCurrent[cloneGameState.clickedID - 1].point;
+            // if (
+            //     (cloneGameState.lastCardIndex === 6 &&
+            //         cloneGameState.movingLeft === "forward") ||
+            //     (cloneGameState.lastCardIndex === 5 &&
+            //         cloneGameState.movingLeft === "forward") ||
+            //     (cloneGameState.lastCardIndex === 10 &&
+            //         cloneGameState.movingLeft === "backward") ||
+            //     (cloneGameState.lastCardIndex === 1 &&
+            //         cloneGameState.movingLeft === "backward")
+            // ) {
+            //     point -= 10;
+            //     newCardsState[cloneGameState.clickedID - 1] = {
+            //         ...newCardsState[cloneGameState.clickedID - 1],
+            //         point: 10,
+            //         pointArr: [0],
+            //     };
+            // } else {
+            //     newCardsState[cloneGameState.clickedID - 1] = {
+            //         ...newCardsState[cloneGameState.clickedID - 1],
+            //         point: 0,
+            //         pointArr: [],
+            //     };
+            // }
+
+            newCardsState[cloneGameState.clickedID - 1] = {
+                ...newCardsState[cloneGameState.clickedID - 1],
+                point: 0,
+                pointArr: [],
+            };
         }
 
         newCardsState = newCardsState.map((card) => ({
@@ -578,17 +758,17 @@ export default function BoardMachine() {
             isGreen: false,
         }));
 
-        renderMoonEachCard(point, newCardsState);
+        renderMoonEachCardMachine(point, newCardsState);
 
-        setTimeout(() => {
-            setGamteState((prevState) => ({
-                ...prevState,
-                isPlayerTwoNext: !prevState.isPlayerTwoNext,
-            }));
-            changeTurn(gameState.isPlayerTwoNext);
-        }, 500 * point);
+        // setTimeout(() => {
+        //     setGamteState((prevState) => ({
+        //         ...prevState,
+        //         isPlayerTwoNext: !prevState.isPlayerTwoNext,
+        //     }));
+        //     changeTurn(cloneGameState.isPlayerTwoNext);
+        // }, 500 * point);
 
-        borrowPieces(point, newCardsState);
+        // borrowPieces(point, newCardsState);
     };
 
     const handleArrowClick = (newCardsStateCurrent) => {
@@ -597,18 +777,18 @@ export default function BoardMachine() {
         let player = gameState.isPlayerTwoNext ? 2 : 1;
         let gameMap = getMovingMap(direct, player);
         let point = newCardsState[gameState.clickedID - 1].point;
-        if (
-            (gameState.lastCardIndex === 6 &&
-                gameState.movingLeft === "forward") ||
-            (gameState.lastCardIndex === 5 &&
-                gameState.movingLeft === "forward") ||
-            (gameState.lastCardIndex === 10 &&
-                gameState.movingLeft === "backward") ||
-            (gameState.lastCardIndex === 1 &&
-                gameState.movingLeft === "backward")
-        ) {
-            point -= 10;
-        }
+        // if (
+        //     (gameState.lastCardIndex === 6 &&
+        //         gameState.movingLeft === "forward") ||
+        //     (gameState.lastCardIndex === 5 &&
+        //         gameState.movingLeft === "forward") ||
+        //     (gameState.lastCardIndex === 10 &&
+        //         gameState.movingLeft === "backward") ||
+        //     (gameState.lastCardIndex === 1 &&
+        //         gameState.movingLeft === "backward")
+        // ) {
+        //     point -= 10;
+        // }
         // get the locate of clicked card and add 'point' step
         let indexOfMap = validateIndex(
             gameMap.findIndex((a) => a == gameState.clickedID) + point
@@ -626,6 +806,43 @@ export default function BoardMachine() {
         gameStateClone["lastCardIndex"] = indexLocate;
         setGamteState(gameStateClone);
         arrowClick(newCardsStateCurrent);
+    };
+
+    const handleArrowClickMachine = (newCardsStateCurrent) => {
+        let newCardsState = newCardsStateCurrent;
+        let direct = cloneGameState.movingLeft;
+        let player = cloneGameState.isPlayerTwoNext ? 2 : 1;
+        let gameMap = getMovingMap(direct, player);
+        let point = newCardsState[cloneGameState.clickedID - 1].point;
+        // if (
+        //     (cloneGameState.lastCardIndex === 6 &&
+        //         cloneGameState.movingLeft === "forward") ||
+        //     (cloneGameState.lastCardIndex === 5 &&
+        //         cloneGameState.movingLeft === "forward") ||
+        //     (cloneGameState.lastCardIndex === 10 &&
+        //         cloneGameState.movingLeft === "backward") ||
+        //     (cloneGameState.lastCardIndex === 1 &&
+        //         cloneGameState.movingLeft === "backward")
+        // ) {
+        //     point -= 10;
+        // }
+        // get the locate of clicked card and add 'point' step
+        let indexOfMap = validateIndex(
+            gameMap.findIndex((a) => a == cloneGameState.clickedID) + point
+        );
+        // get the locate of the final mutated card
+        let indexLocate = gameMap[indexOfMap] - 1;
+        // make the final mutated card glowing
+        newCardsState[indexLocate] = {
+            ...newCardsState[indexLocate],
+            isGreen: true,
+        };
+        const gameStateClone = cloneGameState;
+        gameStateClone["movingLeft"] = direct;
+        gameStateClone["map"] = gameMap;
+        gameStateClone["lastCardIndex"] = indexLocate;
+        setCloneGamteState(gameStateClone);
+        arrowClickMachine(newCardsStateCurrent);
     };
 
     let turnResult = (cardState, movingMap, nextCardIndex) => {
@@ -696,6 +913,63 @@ export default function BoardMachine() {
         }
     };
 
+    let turnResultMachine = (cardState, movingMap, nextCardIndex) => {
+        // console.log("cardState turn:", cardState);
+        let point = cardState[nextCardIndex].point;
+        if (point != 0) {
+            return 0;
+        } else {
+            let checkPoint = 0;
+            let getPointCardIndex;
+            // get which card is next
+            let mapIndex = validateIndex(
+                movingMap.findIndex((a) => a == nextCardIndex + 1)
+            );
+
+            cardState = cardState.map((card) => ({
+                ...card,
+                isChoosen: false,
+                displayLeftArrow: false,
+                displayRightArrow: false,
+                isGreen: false,
+            }));
+
+            while (checkPoint == 0) {
+                // know which card of being gotten point
+                mapIndex = validateIndex(mapIndex + 1);
+                // then get the index of that card
+                getPointCardIndex = movingMap[mapIndex] - 1;
+
+                if (cardState[getPointCardIndex].point == 0) {
+                    return point;
+                }
+                point += cardState[getPointCardIndex].point;
+
+                getPointCardIndex == 0 || getPointCardIndex == 11
+                    ? (cardState[getPointCardIndex] = {
+                          ...cardState[getPointCardIndex],
+                          point: 0,
+                      })
+                    : (cardState[getPointCardIndex] = {
+                          ...cardState[getPointCardIndex],
+                          point: 0,
+                          pointArr: [],
+                      });
+
+                // console.log("cardState:", cardState);
+                setCloneCardsData(() => [...cardState]);
+
+                // know which card of being gotten point
+                mapIndex = validateIndex(mapIndex + 1);
+                // then get the index of that card
+                getPointCardIndex = movingMap[mapIndex] - 1;
+                checkPoint = cardState[getPointCardIndex].point;
+            }
+
+            return point;
+        }
+    };
+
     let renderCards = cardsState.map((item) => (
         <Card
             key={item.id + "card"}
@@ -719,41 +993,47 @@ export default function BoardMachine() {
         // const computerCardState = cardsState.filter(
         //     (element) => element.id >= 7 && element.id <= 11
         // );
+
+        const directAll = ["forward", "backward"];
         for (let i = 7; i <= 11; i++) {
-            // displayArrowClick(index);
-            let state = ClonecardsState;
-            state["clickedID"] = i;
-            let newCardsState = state;
-            const directAll = ["forward", "backward"];
             for (let index = 0; index < directAll.length; index++) {
+                let cardStates = ClonecardsState;
+                cardsState.forEach((el, index) => {
+                    cardStates[index] = el;
+                });
+                // displayArrowClick(index);
+                let state = cloneGameState;
+                state["clickedID"] = i;
+                state["movingLeft"] = gameState.movingLeft;
+                state["isPlayerTwoNext"] = gameState.isPlayerTwoNext;
+                state["lastCardIndex"] = gameState.lastCardIndex;
+                state["map"] = gameState.map;
+                state["player1Point"] = gameState.player1Point;
+                state["player2Point"] = gameState.player2Point;
                 const element = directAll[index];
                 let direct = element;
                 let player = cloneGameState.isPlayerTwoNext ? 2 : 1;
                 let gameMap = getMovingMap(direct, player);
-                let point = newCardsState[cloneGameState.clickedID - 1].point;
+                let point = ClonecardsState[cloneGameState.clickedID - 1].point;
                 // get the locate of clicked card and add 'point' step
                 let indexOfMap = validateIndex(
-                    gameMap.findIndex((a) => a == cloneGameState.clickedID) + point
+                    gameMap.findIndex((a) => a == cloneGameState.clickedID) +
+                        point
                 );
                 // get the locate of the final mutated card
                 let indexLocate = gameMap[indexOfMap] - 1;
                 // make the final mutated card glowing
-                newCardsState[indexLocate] = {
-                    ...newCardsState[indexLocate],
+                ClonecardsState[indexLocate] = {
+                    ...ClonecardsState[indexLocate],
                     isGreen: true,
                 };
-
-                const GameStateClone = cloneGameState;
-                GameStateClone["movingLeft"] = direct;
-                GameStateClone["map"] = gameMap;
-                GameStateClone["lastCardIndex"] = indexLocate;
+                cloneGameState["movingLeft"] = direct;
+                cloneGameState["map"] = gameMap;
+                cloneGameState["lastCardIndex"] = indexLocate;
                 const optionClone = option;
                 optionClone["i"] = i;
                 optionClone["direct"] = direct;
                 setOption(optionClone);
-                setCloneGamteState(GameStateClone);
-                setCloneCardsData(() => [...newCardsState]);
-                debugger
                 arrowClickMachine();
             }
         }
