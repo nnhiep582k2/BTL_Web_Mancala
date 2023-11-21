@@ -59,7 +59,7 @@ export default function BoardMachine() {
             player2Point: 0,
         });
     };
-    let maxPoint = [];
+    let maxPoint = {};
 
     useEffect(() => {
         let timer;
@@ -92,14 +92,32 @@ export default function BoardMachine() {
     useEffect(() => {
         if (timeLeftTwoNext.isPlayerTwoNext) {
             evaluation();
-            if(maxPoint && maxPoint.length){
-                if (cardsState[maxPoint[0].postion - 1].point == 0) {
+            if (maxPoint) {
+                if (cardsState[maxPoint.postion - 1].point == 0) {
                     return;
                 }
                 const gameStateClone = gameState;
-                gameStateClone["movingLeft"] = maxPoint[0].direct;
-                gameStateClone["clickedID"] = maxPoint[0].postion;
-                handleArrowClick(cardsState);
+                gameStateClone["movingLeft"] = maxPoint.direct;
+                gameStateClone["clickedID"] = maxPoint.postion;
+                let newCardsState = cardsState;
+                let direct = gameState.movingLeft;
+                let player = gameState.isPlayerTwoNext ? 2 : 1;
+                let gameMap = getMovingMap(direct, player);
+                let point = newCardsState[gameState.clickedID - 1].point;
+                // get the locate of clicked card and add 'point' step
+                let indexOfMap = validateIndex(
+                    gameMap.findIndex((a) => a == gameState.clickedID) + point
+                );
+                // get the locate of the final mutated card
+                let indexLocate = gameMap[indexOfMap] - 1;
+                // make the final mutated card glowing
+                newCardsState[indexLocate] = {
+                    ...newCardsState[indexLocate],
+                    isGreen: true,
+                };
+
+                gameStateClone["lastCardIndex"] = indexLocate;
+                arrowClick(cardsState);
                 setTimeLeftTwoNext((prevTime) => ({
                     timeLeft: 30,
                     isPlayerTwoNext: !prevTime.isPlayerTwoNext,
@@ -318,6 +336,14 @@ export default function BoardMachine() {
             if (theAfterNextId == undefined && theNextId === 7) {
                 theAfterNextId = 1;
             }
+            if (cloneGameState.lastCardIndex === 5) {
+                theNextId = 12;
+                theAfterNextId = 11;
+            }
+            if (cloneGameState.lastCardIndex === 6) {
+                theNextId = 1;
+                theAfterNextId = 2;
+            }
         } else {
             for (let index = gameState.map.length - 1; index >= 0; index--) {
                 let item = gameState.map[index];
@@ -333,6 +359,14 @@ export default function BoardMachine() {
             }
             if (theAfterNextId == undefined && theNextId === 1) {
                 theAfterNextId = 7;
+            }
+            if (cloneGameState.lastCardIndex === 1) {
+                theNextId = 1;
+                theAfterNextId = 7;
+            }
+            if (cloneGameState.lastCardIndex === 10) {
+                theNextId = 12;
+                theAfterNextId = 6;
             }
         }
 
@@ -375,28 +409,29 @@ export default function BoardMachine() {
                     isPlayerTwoNext: !prevTime.isPlayerTwoNext,
                 }));
                 setCountdown(true);
-            } else {
-                optionPriority.push({
-                    position: option.i,
-                    direct: option.direct,
-                    point: result,
-                });
-                let maxPointPriority;
-                let max = -9999999999;
-                for (let index = 0; index < optionPriority.length; index++) {
-                    const element = optionPriority[index];
-                    if (element.point > max) {
-                        maxPointPriority = {
-                            postion: element.position,
-                            direct: element.direct,
-                            point: element.point
-                        };
-                    }
-                }
-                maxPoint.push(maxPointPriority)
-                // setPosition(maxPoint);
-                // resultValue = result;
             }
+            // else {
+            //     optionPriority.push({
+            //         position: option.i,
+            //         direct: option.direct,
+            //         point: result,
+            //     });
+            //     let maxPointPriority;
+            //     let max = -9999999999;
+            //     for (let index = 0; index < optionPriority.length; index++) {
+            //         const element = optionPriority[index];
+            //         if (element.point > max) {
+            //             maxPointPriority = {
+            //                 postion: element.position,
+            //                 direct: element.direct,
+            //                 point: element.point,
+            //             };
+            //         }
+            //     }
+            //     maxPoint.push(maxPointPriority);
+            //     // setPosition(maxPoint);
+            //     // resultValue = result;
+            // }
 
             return;
         } else if (theNextPoint === 0 && theAfterNextPoint === 0) {
@@ -430,6 +465,14 @@ export default function BoardMachine() {
             if (theAfterNextId == undefined && theNextId === 7) {
                 theAfterNextId = 1;
             }
+            if (cloneGameState.lastCardIndex === 5) {
+                theNextId = 12;
+                theAfterNextId = 11;
+            }
+            if (cloneGameState.lastCardIndex === 6) {
+                theNextId = 1;
+                theAfterNextId = 2;
+            }
         } else {
             for (
                 let index = cloneGameState.map.length - 1;
@@ -450,10 +493,18 @@ export default function BoardMachine() {
             if (theAfterNextId == undefined && theNextId === 1) {
                 theAfterNextId = 7;
             }
+            if (cloneGameState.lastCardIndex === 1) {
+                theNextId = 1;
+                theAfterNextId = 7;
+            }
+            if (cloneGameState.lastCardIndex === 10) {
+                theNextId = 12;
+                theAfterNextId = 6;
+            }
         }
 
         let theNextPoint =
-            theNextId >=0 &&
+            theNextId >= 0 &&
             newCardsState.filter((item) => item.id === theNextId)[0].point;
         let theAfterNextPoint =
             theAfterNextId >= 0 &&
@@ -505,11 +556,12 @@ export default function BoardMachine() {
                         maxPointPriority = {
                             postion: element.position,
                             direct: element.direct,
-                            point: element.point
+                            point: element.point,
                         };
+                        maxPoint = maxPointPriority;
+                        max = element.point;
                     }
                 }
-                maxPoint.push(maxPointPriority)
             }
 
             return;
@@ -698,7 +750,7 @@ export default function BoardMachine() {
                 ...prevState,
                 isPlayerTwoNext: !prevState.isPlayerTwoNext,
             }));
-            
+
             changeTurn(gameState.isPlayerTwoNext);
         }, 500 * point);
 
